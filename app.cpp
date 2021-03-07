@@ -68,8 +68,9 @@ bool App::OnInit()
 
     mMainFrame = new Main();
     mMainFrame->Show();
+    
+    printf("oiiii");
 
-    printf("aaaaaaaa\n");
     /*
     mTox = tox_new(NULL, NULL);
 
@@ -118,10 +119,18 @@ bool App::OnInit()
     while (1)
     {
         tox_iterate(mTox, NULL);
-        usleep(tox_iteration_interval(mTox) * 1000);
+
+        uint32_t v = tox_iteration_interval(mTox);
+
+        struct timespec pause;
+        pause.tv_sec = 0;
+        pause.tv_nsec = v * 1000 * 1000;
+
+        nanosleep(&pause, NULL);
     }
 
     tox_kill(mTox);
-*/
+
+    */
     return true;
 }
