@@ -2,8 +2,8 @@ PROJ_NAME = app
 
 # .cpp files
 #SOURCES := $(shell find . -name '*.cpp')
-SOURCES := $(wildcard *.cpp) $(wildcard **/*.cpp)
-HEADERS := $(wildcard *.h) $(wildcard **/*.h)
+SOURCES := $(wildcard *.cpp)
+HEADERS := $(wildcard *.h)
 
 # Object files
 OBJ=$(addprefix objects/,$(subst .cpp,.o,$(notdir $(SOURCES))))
@@ -29,10 +29,6 @@ $(PROJ_NAME): $(OBJ)
 	@ echo ' '
 
 objects/%.o: ./%.cpp
-	@ echo 'Building target using GCC compiler: $<'
-	$(CC) $< $(CC_FLAGS) -o $@
-	@ echo ' '
-objects/%.o: ./util/%.cpp
 	@ echo 'Building target using GCC compiler: $<'
 	$(CC) $< $(CC_FLAGS) -o $@
 	@ echo ' '

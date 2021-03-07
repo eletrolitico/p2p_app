@@ -12,7 +12,7 @@ public:
     App();
     ~App();
 
-    virtual bool onInit();
+    virtual bool OnInit() override;
 
 private:
     Tox *mTox;

@@ -63,11 +63,13 @@ App::App() {}
 
 App::~App() {}
 
-bool App::onInit()
+bool App::OnInit()
 {
 
     mMainFrame = new Main();
     mMainFrame->Show();
+
+    printf("aaaaaaaa\n");
     /*
     mTox = tox_new(NULL, NULL);
 
