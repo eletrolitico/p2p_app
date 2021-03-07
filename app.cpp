@@ -7,9 +7,10 @@
 #include <unistd.h>
 
 #include <sodium/utils.h>
-#include <tox/tox.h>
 
-//#include <wx/wx.h>
+#include "app.h"
+
+wxIMPLEMENT_APP(App);
 
 typedef struct DHT_node
 {
@@ -58,15 +59,23 @@ void self_connection_status_cb(Tox *tox, TOX_CONNECTION connection_status, void 
     }
 }
 
-int main()
+App::App() {}
+
+App::~App() {}
+
+bool App::onInit()
 {
-    Tox *tox = tox_new(NULL, NULL);
+
+    mMainFrame = new Main();
+    mMainFrame->Show();
+    /*
+    mTox = tox_new(NULL, NULL);
 
     const char *name = "Echo Bot";
-    tox_self_set_name(tox, (uint8_t *)name, strlen(name), NULL);
+    tox_self_set_name(mTox, (uint8_t *)name, strlen(name), NULL);
 
     const char *status_message = "Echoing your messages";
-    tox_self_set_status_message(tox, (uint8_t *)status_message, strlen(status_message), NULL);
+    tox_self_set_status_message(mTox, (uint8_t *)status_message, strlen(status_message), NULL);
 
     DHT_node nodes[] = {{"85.143.221.42", 33445, "DA4E4ED4B697F2E9B000EEFE3A34B554ACD3F45F5C96EAEA2516DD7FF9AF7B43"},
                         {"2a04:ac00:1:9f00:5054:ff:fe01:becd", 33445, "DA4E4ED4B697F2E9B000EEFE3A34B554ACD3F45F5C96EAEA2516DD7FF9AF7B43"},
@@ -81,11 +90,11 @@ int main()
     {
         unsigned char key_bin[TOX_PUBLIC_KEY_SIZE];
         sodium_hex2bin(key_bin, sizeof(key_bin), nodes[i].key_hex, sizeof(nodes[i].key_hex) - 1, NULL, NULL, NULL);
-        tox_bootstrap(tox, nodes[i].ip, nodes[i].port, key_bin, NULL);
+        tox_bootstrap(mTox, nodes[i].ip, nodes[i].port, key_bin, NULL);
     }
 
     uint8_t tox_id_bin[TOX_ADDRESS_SIZE];
-    tox_self_get_address(tox, tox_id_bin);
+    tox_self_get_address(mTox, tox_id_bin);
 
     char tox_id_hex[TOX_ADDRESS_SIZE * 2 + 1];
     sodium_bin2hex(tox_id_hex, sizeof(tox_id_hex), tox_id_bin, sizeof(tox_id_bin));
@@ -97,20 +106,20 @@ int main()
 
     printf("Tox ID: %s\n", tox_id_hex);
 
-    tox_callback_friend_request(tox, friend_request_cb);
-    tox_callback_friend_message(tox, friend_message_cb);
+    tox_callback_friend_request(mTox, friend_request_cb);
+    tox_callback_friend_message(mTox, friend_message_cb);
 
-    tox_callback_self_connection_status(tox, self_connection_status_cb);
+    tox_callback_self_connection_status(mTox, self_connection_status_cb);
 
     printf("Connecting...\n");
 
     while (1)
     {
-        tox_iterate(tox, NULL);
-        usleep(tox_iteration_interval(tox) * 1000);
+        tox_iterate(mTox, NULL);
+        usleep(tox_iteration_interval(mTox) * 1000);
     }
 
-    tox_kill(tox);
-
-    return 0;
+    tox_kill(mTox);
+*/
+    return true;
 }
