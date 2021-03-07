@@ -9,6 +9,8 @@
 #include <sodium/utils.h>
 #include <tox/tox.h>
 
+//#include <wx/wx.h>
+
 typedef struct DHT_node
 {
     const char *ip;
