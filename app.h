@@ -4,7 +4,7 @@
 #include <wx/wx.h>
 #include <tox/tox.h>
 
-#include "main.h"
+#include "main-frame.h"
 
 class App : public wxApp
 {

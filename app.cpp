@@ -69,7 +69,7 @@ bool App::OnInit()
     mMainFrame = new Main();
     mMainFrame->Show();
     
-    printf("oiiii");
+    printf("It's running!");
 
     /*
     mTox = tox_new(NULL, NULL);

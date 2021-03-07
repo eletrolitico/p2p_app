@@ -7,7 +7,7 @@ class Main : public wxFrame
 {
 
 private:
-    wxTextCtrl *MainEditBox;
+    wxTextCtrl *userNameEditBox;
 
 public:
     Main();
