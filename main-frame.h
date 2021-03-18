@@ -1,22 +1,27 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef MAIN_FRAME_H
+#define MAIN_FRAME_H
 
 #include <wx/wx.h>
 
-class Main : public wxFrame
+class MainFrame : public wxFrame
 {
 
-private:
-    wxTextCtrl *userNameEditBox;
-
 public:
-    Main();
-    ~Main();
+    MainFrame();
+    ~MainFrame();
 
     enum
     {
-        TEXT_Main = wxID_HIGHEST + 1, // declares an id which will be used to call our button
+        CONNECT_BTN = wxID_HIGHEST + 1, // declares an id which will be used to call our button
     };
+
+public:
+    wxTextCtrl *mUserNameEditBox;
+    wxButton *mConnectBtn;
+
+    void OnButtonClicked(wxCommandEvent &evt);
+    void OnTxtEdit(wxCommandEvent &evt);
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif
