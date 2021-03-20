@@ -4,10 +4,12 @@
 #include <wx/wx.h>
 #include <tox/tox.h>
 
+#include "main-frame.h"
+
 class ToxHandler : public wxThread
 {
 public:
-    ToxHandler(Tox *, bool *);
+    ToxHandler(Tox *, bool *,MainFrame *);
     ~ToxHandler();
 
     virtual void *Entry() override;
@@ -15,6 +17,6 @@ public:
 private:
     Tox *mTox;
     bool *mShouldRun;
-};
-
+    MainFrame *mFrame;
+};   
 #endif

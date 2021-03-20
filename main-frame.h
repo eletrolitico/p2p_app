@@ -5,7 +5,8 @@
 
 class MainFrame : public wxFrame
 {
-
+private:
+    void CreateUserInterface();
 public:
     MainFrame();
     ~MainFrame();

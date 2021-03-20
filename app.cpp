@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "app.h"
+#include "tox-handler.h"
 
 wxIMPLEMENT_APP(App);
 
@@ -25,7 +26,7 @@ bool App::OnInit()
 
     mTox = tox_new(NULL, NULL);
     mIsRunning = true;
-    //mTHandler = new ToxHandler(mTox, &mIsRunning);
+    //mTHandler = new ToxHandler(mTox, &mIsRunning, mMainFrame);
     //mTHandler->Run();
 
     return true;

@@ -49,7 +49,7 @@ void self_connection_status_cb(Tox *tox, TOX_CONNECTION connection_status, void 
     }
 }
 
-ToxHandler::ToxHandler(Tox *t, bool *b) : wxThread(wxTHREAD_JOINABLE), mTox(t), mShouldRun(b)
+ToxHandler::ToxHandler(Tox *t, bool *b, MainFrame *mFrame) : wxThread(wxTHREAD_JOINABLE), mTox(t), mShouldRun(b),mFrame(mFrame)
 {
 }
 
