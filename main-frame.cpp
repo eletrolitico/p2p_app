@@ -11,9 +11,13 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
 {
 
     //rows, col, padding
-    wxGridSizer *grid = new wxGridSizer(3, 1, 20, 20);
+    wxGridSizer *grid = new wxGridSizer(3, 1, 50, 50);
 
-    mLabelID = new wxStaticText(this, wxID_ANY, "ID: 321", wxPoint(30, 30), wxSize(300, 20), MAIN_STYLE, "label");
+    wxFont font(30, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+
+    mLabelID = new wxStaticText(this, wxID_ANY, "ID: 321", wxPoint(30, 30), wxSize(300, 20), wxALIGN_CENTRE_HORIZONTAL | wxALIGN_CENTRE_VERTICAL, "label");
+    mLabelID->SetFont(font);
+
     grid->Add(mLabelID, 1, wxEXPAND | wxALL);
 
     mUserNameEditBox = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxPoint(10, 10), wxSize(300, 20));
