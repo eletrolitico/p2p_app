@@ -23,6 +23,7 @@ public:
 
     //ctrls
     wxTextCtrl *mMyIDCtrl;
+    wxTextCtrl *mMyNameCtrl;
     wxTextCtrl *mFriendIDCtrl;
 
     //buttons

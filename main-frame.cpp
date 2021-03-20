@@ -11,12 +11,13 @@ MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30),
 {
 
     //labels
-    mMyIDLabel = new wxStaticText(this, wxID_ANY, "My ID:", wxPoint(30, 30), wxSize(300, 20), wxALIGN_LEFT, "label");
+    mMyIDLabel = new wxStaticText(this, wxID_ANY, "My ID/Name:", wxPoint(30, 30), wxSize(300, 20), wxALIGN_LEFT, "label");
     mFriendIDLabel = new wxStaticText(this, wxID_ANY, "Friend ID:", wxPoint(30, 30), wxSize(300, 20), wxALIGN_LEFT, "label");
 
     //ctrl
     mMyIDCtrl = new wxTextCtrl(this, wxID_ANY, "129837shadsd19283718923hgqd19237", wxPoint(10, 10), wxSize(300, 20), wxTE_READONLY);
     mFriendIDCtrl = new wxTextCtrl(this, wxID_ANY, "Friend ID here", wxPoint(10, 10), wxSize(300, 20));
+    mMyNameCtrl = new wxTextCtrl(this, wxID_ANY, "Bot-P2P-2021", wxPoint(10, 10), wxSize(300, 20));
 
     mMyIDCtrl->Bind(wxEVT_TEXT, &MainFrame::OnTxtEdit, this);
    
@@ -32,7 +33,7 @@ MainFrame::~MainFrame(){}
 void MainFrame::CreateUserInterface() {
     
     //rows, col, padding
-    wxGridSizer *grid = new wxGridSizer(6, 1, 0, 0);
+    wxGridSizer *grid = new wxGridSizer(7, 1, 0, 0);
     
     wxFont font(40, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
     
@@ -41,7 +42,7 @@ void MainFrame::CreateUserInterface() {
 
     grid->Add(mMyIDLabel, 1, wxEXPAND | wxALL);     //label
     grid->Add(mMyIDCtrl, 1, wxEXPAND | wxALL);      //ctrl
-    
+    grid->Add(mMyNameCtrl, 1, wxEXPAND | wxALL);    //ctrl name
     //jump a row
     grid->Add(new wxStaticText(this, wxID_ANY, ".", wxPoint(30, 30), wxSize(300, 20), wxALIGN_LEFT, "label"), wxEXPAND | wxALL);
 
