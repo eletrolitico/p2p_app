@@ -6,10 +6,12 @@
 
 #include "main-frame.h"
 
+class MainFrame;
+
 class ToxHandler : public wxThread
 {
 public:
-    ToxHandler(Tox *, bool *,MainFrame *);
+    ToxHandler(Tox *, bool *, MainFrame *);
     ~ToxHandler();
 
     virtual void *Entry() override;

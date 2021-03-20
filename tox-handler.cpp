@@ -57,8 +57,13 @@ ToxHandler::~ToxHandler() {}
 
 void *ToxHandler::Entry()
 {
-    const char *name = "Echo Bot";
-    tox_self_set_name(mTox, (uint8_t *)name, strlen(name), NULL);
+    char myName[1024];
+    strncpy(myName, (const char*)mFrame->mMyNameCtrl->GetValue().mb_str(wxConvUTF8), 1023);
+
+    printf("my name is: %s\n", myName);
+
+    tox_self_set_name(mTox, (uint8_t *)myName, strlen(myName), NULL);
+    
 
     const char *status_message = "Echoing your messages";
     tox_self_set_status_message(mTox, (uint8_t *)status_message, strlen(status_message), NULL);
@@ -90,6 +95,7 @@ void *ToxHandler::Entry()
         tox_id_hex[i] = toupper(tox_id_hex[i]);
     }
 
+    mFrame->mMyIDCtrl->AppendText(wxString::FromUTF8(tox_id_hex));
     printf("Tox ID: %s\n", tox_id_hex);
 
     tox_callback_friend_request(mTox, friend_request_cb);
@@ -108,6 +114,6 @@ void *ToxHandler::Entry()
 
     tox_kill(mTox);
     printf("Exiting thread...\n");
-
+    
     return 0;
 }

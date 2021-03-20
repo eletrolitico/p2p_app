@@ -9,18 +9,17 @@
 
 class App : public wxApp
 {
+
+private:
+    MainFrame *mMainFrame {nullptr};
+
 public:
     App();
     ~App();
 
     virtual bool OnInit() override;
     virtual int OnExit() override;
-
-private:
-    Tox *mTox {nullptr};
-    MainFrame *mMainFrame {nullptr};
-    ToxHandler *mTHandler {nullptr};
-    bool mIsRunning;
+    
 };
 
 #endif

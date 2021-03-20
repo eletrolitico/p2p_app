@@ -2,11 +2,23 @@
 #define MAIN_FRAME_H
 
 #include <wx/wx.h>
+#include <string>
+
+#include "tox-handler.h"
+
+class ToxHandler;
 
 class MainFrame : public wxFrame
 {
 private:
     void CreateUserInterface();
+
+    Tox *mTox {nullptr};
+    bool mIsRunning {false};
+    bool mBtnConnectedClicked {false};
+
+    ToxHandler *mTHandler {nullptr};
+
 public:
     MainFrame();
     ~MainFrame();
@@ -29,9 +41,12 @@ public:
     //buttons
     wxButton *mConnectBtn;
 
+    void OnClose(wxCloseEvent &evt);
+
     void OnButtonClicked(wxCommandEvent &evt);
     void OnTxtEdit(wxCommandEvent &evt);
     wxDECLARE_EVENT_TABLE();
+
 };
 
 #endif
