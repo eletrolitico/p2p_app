@@ -17,8 +17,15 @@ public:
     };
 
 public:
-    wxStaticText *mLabelID;
-    wxTextCtrl *mUserNameEditBox;
+    //labels
+    wxStaticText *mMyIDLabel;
+    wxStaticText *mFriendIDLabel;
+
+    //ctrls
+    wxTextCtrl *mMyIDCtrl;
+    wxTextCtrl *mFriendIDCtrl;
+
+    //buttons
     wxButton *mConnectBtn;
 
     void OnButtonClicked(wxCommandEvent &evt);

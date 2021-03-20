@@ -9,15 +9,21 @@ wxEND_EVENT_TABLE()
 
 MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), MAIN_STYLE)
 {
-    mLabelID = new wxStaticText(this, wxID_ANY, "ID: 321", wxPoint(30, 30), wxSize(300, 20), wxALIGN_CENTRE_HORIZONTAL | wxALIGN_CENTRE_VERTICAL, "label");
 
-    mUserNameEditBox = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxPoint(10, 10), wxSize(300, 20));
-    
-    mUserNameEditBox->Bind(wxEVT_TEXT, &MainFrame::OnTxtEdit, this);
+    //labels
+    mMyIDLabel = new wxStaticText(this, wxID_ANY, "My ID:", wxPoint(30, 30), wxSize(300, 20), wxALIGN_LEFT, "label");
+    mFriendIDLabel = new wxStaticText(this, wxID_ANY, "Friend ID:", wxPoint(30, 30), wxSize(300, 20), wxALIGN_LEFT, "label");
 
+    //ctrl
+    mMyIDCtrl = new wxTextCtrl(this, wxID_ANY, "129837shadsd19283718923hgqd19237", wxPoint(10, 10), wxSize(300, 20), wxTE_READONLY);
+    mFriendIDCtrl = new wxTextCtrl(this, wxID_ANY, "Friend ID here", wxPoint(10, 10), wxSize(300, 20));
+
+    mMyIDCtrl->Bind(wxEVT_TEXT, &MainFrame::OnTxtEdit, this);
+   
+    //btn
     mConnectBtn = new wxButton(this, CONNECT_BTN, "Connect", wxPoint(10, 30), wxSize(60, 20));
     
-    //CreateUserInterface();
+    CreateUserInterface();
     
 }
 
@@ -28,15 +34,20 @@ MainFrame::~MainFrame()
 void MainFrame::CreateUserInterface() {
     
     //rows, col, padding
-    wxGridSizer *grid = new wxGridSizer(3, 1, 50, 50);
+    wxGridSizer *grid = new wxGridSizer(5, 1, 0, 0);
     
-    wxFont font(30, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+    wxFont font(50, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
     
-    mLabelID->SetFont(font);
+    mMyIDLabel->SetFont(font);
+    mFriendIDLabel->SetFont(font);
 
-    grid->Add(mLabelID, 1, wxEXPAND | wxALL);
-    grid->Add(mUserNameEditBox, 1, wxEXPAND | wxALL);
-    grid->Add(mConnectBtn, 1, wxEXPAND | wxALL);
+    grid->Add(mMyIDLabel, 1, wxEXPAND | wxALL);     //label
+    grid->Add(mMyIDCtrl, 1, wxEXPAND | wxALL);      //ctrl
+    
+    grid->Add(mFriendIDLabel, 1, wxEXPAND | wxALL); //label
+    grid->Add(mFriendIDCtrl, 1, wxEXPAND | wxALL);  //ctrl
+    
+    grid->Add(mConnectBtn, 1, wxEXPAND | wxALL);    //btn
 
     this->SetSizer(grid);
     grid->Layout();
@@ -51,6 +62,6 @@ void MainFrame::OnButtonClicked(wxCommandEvent &evt)
 
 void MainFrame::OnTxtEdit(wxCommandEvent &evt)
 {
-    printf("edit: %s\n", mUserNameEditBox->GetValue().c_str().AsChar());
+    printf("edit: %s\n", mMyIDCtrl->GetValue().c_str().AsChar());
     evt.Skip();
 }
