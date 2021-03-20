@@ -19,6 +19,7 @@ bool App::OnInit()
 
     mMainFrame = new MainFrame();
     mMainFrame->Show();
+    mMainFrame->CenterOnScreen();
 
     printf("It's running!\n");
 

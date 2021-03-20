@@ -16,6 +16,7 @@ public:
     };
 
 public:
+    wxStaticText *mLabelID;
     wxTextCtrl *mUserNameEditBox;
     wxButton *mConnectBtn;
 

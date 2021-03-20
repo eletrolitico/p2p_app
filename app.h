@@ -17,9 +17,9 @@ public:
     virtual int OnExit() override;
 
 private:
-    Tox *mTox;
-    MainFrame *mMainFrame = nullptr;
-    ToxHandler *mTHandler = nullptr;
+    Tox *mTox {nullptr};
+    MainFrame *mMainFrame {nullptr};
+    ToxHandler *mTHandler {nullptr};
     bool mIsRunning;
 };
 
