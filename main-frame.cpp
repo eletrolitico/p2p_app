@@ -83,6 +83,8 @@ void MainFrame::OnButtonClicked(wxCommandEvent &evt)
         return;
     }
     
+    mConnectBtn->Enable(false);
+    
     mIsRunning = true;
     mTHandler->Run();
 
