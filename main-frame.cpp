@@ -10,8 +10,14 @@ wxEND_EVENT_TABLE()
 
 MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), MAIN_STYLE)
 {    
-    //tox tread
-    mTox = tox_new(NULL,NULL);
+
+    TOX_ERR_NEW err_new;
+    Tox *mTox = tox_new(NULL, &err_new);
+    if (err_new != TOX_ERR_NEW_OK) {
+        fprintf(stderr, "tox_new failed with error code %d\n", err_new);
+       exit(1);
+    }
+
     mTHandler = new ToxHandler(mTox, &mIsRunning, this);
 
     //labels
@@ -88,6 +94,9 @@ void MainFrame::OnButtonClicked(wxCommandEvent &evt)
     mIsRunning = true;
     mTHandler->Run();
 
+    MessageDialog* message = new MessageDialog(wxT("Messages"));
+    message->Show(true);
+
     printf("clicked\n");
     evt.Skip();
 }
@@ -103,8 +112,9 @@ void MainFrame::OnClose(wxCloseEvent &evt)
     mIsRunning = false;
     
     if (mTHandler) {
-        mTHandler->Wait();
+        mTHandler->Delete();
         delete mTHandler;
     }
+    
 }
 

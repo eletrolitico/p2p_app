@@ -5,6 +5,7 @@
 #include <string>
 
 #include "tox-handler.h"
+#include "message-dlg.h"
 
 class ToxHandler;
 
