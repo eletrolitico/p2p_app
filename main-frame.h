@@ -14,11 +14,11 @@ class MainFrame : public wxFrame
 private:
     void CreateUserInterface();
 
-    Tox *mTox {nullptr};
-    bool mIsRunning {false};
-    bool mBtnConnectedClicked {false};
+    Tox *mTox{nullptr};
+    bool mIsRunning{false};
+    bool mBtnConnectedClicked{false};
 
-    ToxHandler *mTHandler {nullptr};
+    ToxHandler *mTHandler{nullptr};
 
 public:
     MainFrame();

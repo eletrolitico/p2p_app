@@ -4,32 +4,18 @@ MessageDialog::MessageDialog(const wxString &title)
     : wxDialog(NULL, -1, title, wxDefaultPosition, wxSize(800, 600))
 {
 
-    wxPanel *panel = new wxPanel(this, -1);
+    //ListBox
+    mMessageListBox = new wxListBox();
 
-    wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer *hbox = new wxBoxSizer(wxHORIZONTAL);
+    //Ctrl
+    mMessageTextCtrl = new wxTextCtrl(this, wxID_ANY, wxT("Type your message here"), wxPoint(95, 105));
+    mMessageTextCtrl->Bind(wxEVT_TEXT, &MessageDialog::OnTxtEdit, this);
 
-    tc = new wxTextCtrl(panel, -1, wxT(""),
-                        wxPoint(95, 105));
-    tc->Bind(wxEVT_TEXT, &MessageDialog::OnTxtEdit, this);
+    //Btn
+    mSendBtn = new wxButton(this, wxID_ANY, "Connect", wxPoint(10, 30), wxSize(60, 20));
+    mSendBtn->Bind(wxEVT_BUTTON, &MessageDialog::OnButtonClicked, this);
 
-    wxButton *okButton = new wxButton(this, -1, wxT("Ok"),
-                                      wxDefaultPosition, wxSize(70, 30));
-
-    wxButton *closeButton = new wxButton(this, -1, wxT("Close"),
-                                         wxDefaultPosition, wxSize(70, 30));
-
-    lb = new wxListBox(this, -1, wxDefaultPosition, wxSize(700, 200));
-
-    hbox->Add(lb);
-
-    hbox->Add(okButton, 1);
-    hbox->Add(closeButton, 1, wxLEFT, 5);
-
-    vbox->Add(panel, 1);
-    vbox->Add(hbox, 0, wxALIGN_CENTER | wxTOP | wxBOTTOM, 10);
-
-    SetSizer(vbox);
+    CreateInterface();
 
     Centre();
     ShowModal();
@@ -37,8 +23,32 @@ MessageDialog::MessageDialog(const wxString &title)
     Destroy();
 }
 
+void MessageDialog::CreateInterface()
+{
+
+    //grid - rows, col, padding
+    wxGridSizer *grid = new wxGridSizer(3, 1, 10, 10);
+
+    wxFont font(40, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+    mSendBtn->SetFont(font);
+
+    //Add
+    grid->Add(mMessageListBox, 1, wxEXPAND | wxALL);
+    grid->Add(mMessageTextCtrl, 1, wxEXPAND | wxALL);
+    grid->Add(mSendBtn, 1, wxEXPAND | wxALL);
+
+    this->SetSizer(grid);
+    grid->Layout();
+}
+
 void MessageDialog::OnTxtEdit(wxCommandEvent &evt)
 {
-    printf("edit: %s\n", tc->GetValue().c_str().AsChar());
+    printf("edit: %s\n", mMessageTextCtrl->GetValue().c_str().AsChar());
+    evt.Skip();
+}
+
+void MessageDialog::OnButtonClicked(wxCommandEvent &evt)
+{
+    printf("clicked send button\n");
     evt.Skip();
 }
