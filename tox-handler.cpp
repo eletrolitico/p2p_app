@@ -49,20 +49,20 @@ void self_connection_status_cb(Tox *tox, TOX_CONNECTION connection_status, void 
     }
 }
 
-ToxHandler::ToxHandler(Tox *t, bool *b, MainFrame *mFrame) : wxThread(wxTHREAD_DETACHED), mTox(t), mShouldRun(b),mFrame(mFrame)
-{}
+ToxHandler::ToxHandler(Tox *t, bool *b, MainFrame *mFrame) : wxThread(wxTHREAD_DETACHED), mTox(t), mShouldRun(b), mFrame(mFrame)
+{
+}
 
 ToxHandler::~ToxHandler() {}
 
 void *ToxHandler::Entry()
 {
     char myName[1024];
-    strncpy(myName, (const char*)mFrame->mMyNameCtrl->GetValue().mb_str(wxConvUTF8), 1023);
+    strncpy(myName, (const char *)mFrame->mMyNameCtrl->GetValue().mb_str(wxConvUTF8), 1023);
 
     printf("my name is: %s\n", myName);
 
     tox_self_set_name(mTox, (uint8_t *)myName, strlen(myName), NULL);
-    
 
     const char *status_message = "Echoing your messages";
     tox_self_set_status_message(mTox, (uint8_t *)status_message, strlen(status_message), NULL);
@@ -97,6 +97,8 @@ void *ToxHandler::Entry()
     mFrame->mMyIDCtrl->AppendText(wxString::FromUTF8(tox_id_hex));
     printf("Tox ID: %s\n", tox_id_hex);
 
+    //mFrame->AddToClipBoard(tox_id_hex);
+
     tox_callback_friend_request(mTox, friend_request_cb);
     tox_callback_friend_message(mTox, friend_message_cb);
     tox_callback_self_connection_status(mTox, self_connection_status_cb);
@@ -113,6 +115,6 @@ void *ToxHandler::Entry()
 
     tox_kill(mTox);
     printf("Exiting thread...\n");
-    
+
     return 0;
 }

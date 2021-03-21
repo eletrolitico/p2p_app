@@ -2,6 +2,7 @@
 #define MAIN_FRAME_H
 
 #include <wx/wx.h>
+#include <wx/clipbrd.h>
 #include <string>
 
 #include "tox-handler.h"
@@ -46,8 +47,9 @@ public:
 
     void OnButtonClicked(wxCommandEvent &evt);
     void OnTxtEdit(wxCommandEvent &evt);
-    wxDECLARE_EVENT_TABLE();
+    void AddToClipBoard(char *txt);
 
+    wxDECLARE_EVENT_TABLE();
 };
 
 #endif

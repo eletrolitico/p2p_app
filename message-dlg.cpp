@@ -3,16 +3,15 @@
 MessageDialog::MessageDialog(const wxString &title)
     : wxDialog(NULL, -1, title, wxDefaultPosition, wxSize(800, 600))
 {
-
     //ListBox
-    mMessageListBox = new wxListBox();
+    mMessageListBox = new wxListBox(this, wxID_ANY, wxPoint(10, 10), wxSize(300, 300));
 
     //Ctrl
     mMessageTextCtrl = new wxTextCtrl(this, wxID_ANY, wxT("Type your message here"), wxPoint(95, 105));
     mMessageTextCtrl->Bind(wxEVT_TEXT, &MessageDialog::OnTxtEdit, this);
 
     //Btn
-    mSendBtn = new wxButton(this, wxID_ANY, "Connect", wxPoint(10, 30), wxSize(60, 20));
+    mSendBtn = new wxButton(this, wxID_ANY, "Send", wxPoint(10, 30), wxSize(60, 20));
     mSendBtn->Bind(wxEVT_BUTTON, &MessageDialog::OnButtonClicked, this);
 
     CreateInterface();
@@ -29,7 +28,7 @@ void MessageDialog::CreateInterface()
     //grid - rows, col, padding
     wxGridSizer *grid = new wxGridSizer(3, 1, 10, 10);
 
-    wxFont font(40, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
+    wxFont font(30, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
     mSendBtn->SetFont(font);
 
     //Add
