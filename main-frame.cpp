@@ -4,12 +4,11 @@
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_CLOSE(MainFrame::OnClose)
-        EVT_BUTTON(CONNECT_BTN, MainFrame::OnButtonClicked)
-            wxEND_EVENT_TABLE()
+    EVT_BUTTON(CONNECT_BTN, MainFrame::OnButtonClicked)
+wxEND_EVENT_TABLE()
 
-                MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), MAIN_STYLE)
+MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), MAIN_STYLE)
 {
-
     TOX_ERR_NEW err_new;
     Tox *mTox = tox_new(NULL, &err_new);
     if (err_new != TOX_ERR_NEW_OK)
@@ -27,7 +26,7 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     //ctrl
     mMyIDCtrl = new wxTextCtrl(this, wxID_ANY, "ID: ", wxPoint(10, 10), wxSize(300, 20), wxTE_READONLY);
     mFriendIDCtrl = new wxTextCtrl(this, wxID_ANY, "Friend ID here", wxPoint(10, 10), wxSize(300, 20));
-    mMyNameCtrl = new wxTextCtrl(this, wxID_ANY, "Bot-P2P-2021", wxPoint(10, 10), wxSize(300, 20));
+    mMyNameCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxPoint(10, 10), wxSize(300, 20));
     mMyNameCtrl->SetFocus();
 
     mMyIDCtrl->Bind(wxEVT_TEXT, &MainFrame::OnTxtEdit, this);
@@ -111,6 +110,8 @@ void MainFrame::OnClose(wxCloseEvent &evt)
         mTHandler->Delete();
         delete mTHandler;
     }
+
+    evt.Skip();
 }
 
 void MainFrame::AddToClipBoard(char *txt)
