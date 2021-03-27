@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iomanip>
 
-wxDEFINE_EVENT(wxEVT_TOX_ID, wxThreadEvent);
+wxDEFINE_EVENT(wxEVT_TOX_INIT, wxThreadEvent);
 
 typedef struct DHT_node
 {
@@ -90,6 +90,24 @@ const char *connection_enum2text(TOX_CONNECTION conn)
     default:
         return "UNKNOWN";
     }
+}
+
+void update_savedata_file(void)
+{
+    if (!(savedata_filename && savedata_tmp_filename))
+        return;
+
+    size_t size = tox_get_savedata_size(mTox);
+    char *savedata = (char *)malloc(size);
+    tox_get_savedata(mTox, (uint8_t *)savedata);
+
+    FILE *f = fopen(savedata_tmp_filename, "wb");
+    fwrite(savedata, size, 1, f);
+    fclose(f);
+
+    rename(savedata_tmp_filename, savedata_filename);
+
+    free(savedata);
 }
 
 /*******************************************************************************
@@ -215,8 +233,7 @@ void ToxHandler::create_tox()
     uint8_t tox_id_bin[TOX_ADDRESS_SIZE];
     tox_self_get_address(mTox, tox_id_bin);
     m_toxID = bin2hex(tox_id_bin, TOX_ADDRESS_SIZE);
-    std::cout << "ToxID: " << m_toxID << std::endl;
-    wxQueueEvent(mFrame, new wxThreadEvent(wxEVT_TOX_ID));
+    //std::cout << "ToxID: " << m_toxID << std::endl;
 }
 
 Friend *ToxHandler::add_friend(uint32_t fNum)
@@ -265,6 +282,8 @@ void ToxHandler::init_friends()
     tox_self_get_status_message(mTox, (uint8_t *)self.status_message);
 
     tox_self_get_public_key(mTox, self.pubkey);
+
+    m_name = std::string(self.name);
 }
 
 void ToxHandler::update_savedata_file()
@@ -301,6 +320,8 @@ void ToxHandler::setup_tox()
     init_friends();
     bootstrap();
 
+    wxQueueEvent(mFrame, new wxThreadEvent(wxEVT_TOX_INIT));
+
     ////// register callbacks
 
     // self
@@ -320,18 +341,32 @@ void *ToxHandler::Entry()
 
     std::cout << "Connecting..." << std::endl;
 
+    uint32_t elapsedTime = 0;
     while (!TestDestroy())
     {
+        if (elapsedTime / 1000 > SAVE_DATA_INTERVAL)
+        {
+            update_savedata_file();
+            //std::cout << "saving..." << std::endl;
+            elapsedTime = 0;
+        }
         tox_iterate(mTox, NULL);
 
         uint32_t v = tox_iteration_interval(mTox);
         this->Sleep(v);
+        elapsedTime += v;
     }
 
     tox_kill(mTox);
     printf("Exiting thread...\n");
 
     return 0;
+}
+
+void ToxHandler::SetName(const std::string &str)
+{
+    m_name = str;
+    tox_self_set_name(mTox, (uint8_t *)str.c_str(), str.size(), NULL);
 }
 
 ToxHandler::ToxHandler(MainFrame *mFrame) : wxThread(wxTHREAD_DETACHED), mFrame(mFrame)

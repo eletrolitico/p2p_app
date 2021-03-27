@@ -4,88 +4,73 @@
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_CLOSE(MainFrame::OnClose)
-    EVT_BUTTON(CONNECT_BTN, MainFrame::OnButtonClicked)
-    EVT_COMMAND(wxID_ANY,wxEVT_TOX_ID,MainFrame::OnToxID)
+    EVT_BUTTON(SEND_BTN, MainFrame::OnSendMessage)
+    EVT_BUTTON(NAME_BTN, MainFrame::OnChangeName)
+    EVT_COMMAND(wxID_ANY, wxEVT_TOX_INIT, MainFrame::OnToxID)
 wxEND_EVENT_TABLE()
 
 MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), MAIN_STYLE)
 {
-    mTHandler = new ToxHandler(this);
-
-    //labels
-    mMyIDLabel = new wxStaticText(this, wxID_ANY, "My ID/Name:", wxPoint(30, 30), wxSize(300, 20), wxALIGN_LEFT, "label");
-    mFriendIDLabel = new wxStaticText(this, wxID_ANY, "Friend ID:", wxPoint(30, 30), wxSize(300, 20), wxALIGN_LEFT, "label");
 
     //ctrl
-    mFriendIDCtrl = new wxTextCtrl(this, wxID_ANY, "Friend ID here", wxPoint(10, 10), wxSize(300, 20));
-    mMyNameCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxPoint(10, 10), wxSize(300, 20));
-    mMyNameCtrl->SetFocus();
-
-    mMyIDCtrl = new wxTextCtrl(this, wxID_ANY, "ID: ", wxPoint(10, 10), wxSize(300, 20), wxTE_READONLY);
-    mMyIDCtrl->Bind(wxEVT_TEXT, &MainFrame::OnTxtEdit, this);
+    m_toxIDCtrl = new wxTextCtrl(this, wxID_ANY, "ID: ", wxDefaultPosition, wxSize(800, 30), wxTE_READONLY);
+    m_nameCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(400, 30));
+    m_messageCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(300, 30));
 
     //btn
-    mConnectBtn = new wxButton(this, CONNECT_BTN, "Connect", wxPoint(10, 30), wxSize(60, 20));
+    m_nameBtn = new wxButton(this, NAME_BTN, "Change", wxDefaultPosition, wxSize(60, 30));
+    m_sendBtn = new wxButton(this, SEND_BTN, "Send", wxDefaultPosition, wxSize(60, 30));
 
-    CreateUserInterface();
+    // list boxes
+    m_friendsBox = new wxListBox(this, wxID_ANY,wxDefaultPosition,wxSize(460,500));
+    m_messageBox = new wxListBox(this, wxID_ANY,wxDefaultPosition,wxSize(400,500));
+
+    auto nameSz = new wxBoxSizer(wxHORIZONTAL);
+    auto messageSz = new wxBoxSizer(wxHORIZONTAL);
+
+    auto left = new wxBoxSizer(wxVERTICAL);
+    auto right = new wxBoxSizer(wxVERTICAL);
+
+    auto main = new wxBoxSizer(wxHORIZONTAL);
+    auto top = new wxBoxSizer(wxVERTICAL);
+
+    nameSz->Add(m_nameCtrl);
+    nameSz->Add(m_nameBtn);
+
+    messageSz->Add(m_messageCtrl);
+    messageSz->Add(m_sendBtn);
+
+    left->Add(nameSz);
+    left->Add(m_friendsBox);
+
+    right->Add(m_messageBox);
+    right->Add(messageSz);
+
+    main->Add(left);
+    main->Add(right);
+
+    top->Add(m_toxIDCtrl);
+    top->Add(main);
+
+    SetSizerAndFit(top);
+
+    mTHandler = new ToxHandler(this);
+    mTHandler->Run();
 }
 
 MainFrame::~MainFrame() {}
 
-void MainFrame::CreateUserInterface()
+void MainFrame::OnSendMessage(wxCommandEvent &evt)
 {
-
-    //grid - rows, col, padding
-    wxGridSizer *grid = new wxGridSizer(7, 1, 0, 0);
-
-    wxFont font(40, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false);
-
-    mMyIDLabel->SetFont(font);
-    mFriendIDLabel->SetFont(font);
-
-    //my info
-    grid->Add(mMyIDLabel, 1, wxEXPAND | wxALL);
-    grid->Add(mMyIDCtrl, 1, wxEXPAND | wxALL);
-    grid->Add(mMyNameCtrl, 1, wxEXPAND | wxALL);
-
-    //jump a row
-    grid->Add(new wxStaticText(this, wxID_ANY, ".", wxPoint(30, 30), wxSize(300, 20), wxALIGN_LEFT, "label"), wxEXPAND | wxALL);
-
-    //friend info
-    grid->Add(mFriendIDLabel, 1, wxEXPAND | wxALL);
-    grid->Add(mFriendIDCtrl, 1, wxEXPAND | wxALL);
-
-    //btn
-    grid->Add(mConnectBtn, 1, wxEXPAND | wxALL);
-
-    this->SetSizer(grid);
-    grid->Layout();
-}
-
-void MainFrame::OnButtonClicked(wxCommandEvent &evt)
-{
-    if (std::string(mMyNameCtrl->GetValue()).empty() || std::string(mFriendIDCtrl->GetValue()).empty())
-    {
-        evt.Skip();
-        return;
-    }
-
-    mConnectBtn->Enable(false);
-
-    mTHandler->Run();
-
-    //MessageDialog *message = new MessageDialog(wxT("Messages"));
-    //message->Show(true);
-
-    printf("clicked\n");
     evt.Skip();
 }
 
-void MainFrame::OnTxtEdit(wxCommandEvent &evt)
+void MainFrame::OnChangeName(wxCommandEvent &evt)
 {
-    printf("edit: %s\n", mMyIDCtrl->GetValue().c_str().AsChar());
+    mTHandler->SetName(m_nameCtrl->GetValue().ToStdString());
     evt.Skip();
 }
+
 
 void MainFrame::OnClose(wxCloseEvent &evt)
 {
@@ -98,8 +83,9 @@ void MainFrame::OnClose(wxCloseEvent &evt)
 
 void MainFrame::OnToxID(wxCommandEvent &evt)
 {
-    *mMyIDCtrl << mTHandler->m_toxID;
-    std::cout << "entrei no ontoxid" << std::endl;
+    *m_toxIDCtrl << mTHandler->m_toxID;
+    *m_nameCtrl << mTHandler->m_name;
+    //std::cout << "entrei no ontoxid" << std::endl;
     evt.Skip();
 }
 

@@ -13,8 +13,6 @@ class ToxHandler;
 class MainFrame : public wxFrame
 {
 private:
-    void CreateUserInterface();
-
     bool mBtnConnectedClicked{false};
     bool m_isDeleting{false};
 
@@ -24,26 +22,27 @@ public:
 
     enum
     {
-        CONNECT_BTN = wxID_HIGHEST + 1, // declares an id which will be used to call our button
+        MAIN_FRAME = wxID_HIGHEST + 1,
+        NAME_BTN,
+        SEND_BTN
     };
 
 public:
-    //labels
-    wxStaticText *mMyIDLabel;
-    wxStaticText *mFriendIDLabel;
-
     //ctrls
-    wxTextCtrl *mMyIDCtrl;
-    wxTextCtrl *mMyNameCtrl;
-    wxTextCtrl *mFriendIDCtrl;
+    wxTextCtrl *m_toxIDCtrl;
+    wxTextCtrl *m_nameCtrl;
+    wxTextCtrl *m_messageCtrl;
+    wxListBox *m_friendsBox;
+    wxListBox *m_messageBox;
 
     //buttons
-    wxButton *mConnectBtn;
+    wxButton *m_nameBtn;
+    wxButton *m_sendBtn;
 
     // Event handlers
     void OnClose(wxCloseEvent &evt);
-    void OnButtonClicked(wxCommandEvent &evt);
-    void OnTxtEdit(wxCommandEvent &evt);
+    void OnSendMessage(wxCommandEvent &evt);
+    void OnChangeName(wxCommandEvent &evt);
     void OnToxID(wxCommandEvent &evt);
 
     void AddToClipBoard(char *txt);

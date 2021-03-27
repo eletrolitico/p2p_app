@@ -9,10 +9,11 @@
 
 #define PORT_RANGE_START 33445 // tox listen port range
 #define PORT_RANGE_END 34445
+#define SAVE_DATA_INTERVAL 5 // interval in seconds
 
 class MainFrame;
 
-wxDECLARE_EVENT(wxEVT_TOX_ID, wxThreadEvent);
+wxDECLARE_EVENT(wxEVT_TOX_INIT, wxThreadEvent);
 
 typedef struct
 {
@@ -46,6 +47,9 @@ public:
 
     virtual ExitCode Entry() override;
     std::string m_toxID;
+    std::string m_name;
+
+    void SetName(const std::string &);
 
 private:
     MainFrame *mFrame;
