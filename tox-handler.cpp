@@ -1,6 +1,9 @@
 #include "tox-handler.h"
 
-#include <sodium/utils.h>
+#include <sstream>
+#include <iomanip>
+
+wxDEFINE_EVENT(wxEVT_TOX_ID, wxThreadEvent);
 
 typedef struct DHT_node
 {
@@ -26,11 +29,18 @@ DHT_node bootstrap_nodes[] = {
     {"tox.kurnevsky.net", 33445, "82EF82BA33445A1F91A7DB27189ECFC0C013E06E3DA71F588ED692BED625EC23"},
 };
 
+Tox *mTox = NULL;
 Friend self;
 std::vector<Friend *> mFriends;
 std::vector<Request> mRequests;
 const char *savedata_filename = "./savedata.tox";
 const char *savedata_tmp_filename = "./savedata.tox.tmp";
+
+/*******************************************************************************
+ *
+ * Utils
+ *
+ ******************************************************************************/
 
 uint8_t *hex2bin(const char *hex)
 {
@@ -43,6 +53,17 @@ uint8_t *hex2bin(const char *hex)
     }
 
     return bin;
+}
+
+std::string bin2hex(const uint8_t *bin, const size_t len)
+{
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (size_t i = 0; i < len; ++i)
+    {
+        ss << std::hex << std::setw(2) << static_cast<int>(bin[i]);
+    }
+    return wxString(ss.str()).Upper().ToStdString();
 }
 
 Friend *getfriend(uint32_t fid)
@@ -151,6 +172,8 @@ void ToxHandler::create_tox()
     tox_options_set_start_port(options, PORT_RANGE_START);
     tox_options_set_end_port(options, PORT_RANGE_END);
 
+    TOX_ERR_NEW err_new;
+
     if (savedata_filename)
     {
         FILE *f = fopen(savedata_filename, "rb");
@@ -167,15 +190,33 @@ void ToxHandler::create_tox()
             tox_options_set_savedata_type(options, TOX_SAVEDATA_TYPE_TOX_SAVE);
             tox_options_set_savedata_data(options, (uint8_t *)savedata, fsize);
 
-            mTox = tox_new(options, NULL);
+            mTox = tox_new(options, &err_new);
+            if (err_new != TOX_ERR_NEW_OK)
+            {
+                fprintf(stderr, "tox_new failed with error code %d\n", err_new);
+                exit(1);
+            }
 
             free(savedata);
         }
     }
 
     if (!mTox)
-        mTox = tox_new(options, NULL);
+    {
+        mTox = tox_new(options, &err_new);
+        if (err_new != TOX_ERR_NEW_OK)
+        {
+            fprintf(stderr, "tox_new failed with error code %d\n", err_new);
+            exit(1);
+        }
+    }
     tox_options_free(options);
+
+    uint8_t tox_id_bin[TOX_ADDRESS_SIZE];
+    tox_self_get_address(mTox, tox_id_bin);
+    m_toxID = bin2hex(tox_id_bin, TOX_ADDRESS_SIZE);
+    std::cout << "ToxID: " << m_toxID << std::endl;
+    wxQueueEvent(mFrame, new wxThreadEvent(wxEVT_TOX_ID));
 }
 
 Friend *ToxHandler::add_friend(uint32_t fNum)
@@ -196,7 +237,7 @@ void ToxHandler::init_friends()
 
     size_t len;
 
-    for (int i = 0; i < sz; i++)
+    for (size_t i = 0; i < sz; i++)
     {
         uint32_t friend_num = friend_list[i];
         Friend *f = add_friend(friend_num);
@@ -276,9 +317,10 @@ void ToxHandler::setup_tox()
 void *ToxHandler::Entry()
 {
     setup_tox();
-    printf("Connecting...\n");
 
-    while (*mShouldRun)
+    std::cout << "Connecting..." << std::endl;
+
+    while (!TestDestroy())
     {
         tox_iterate(mTox, NULL);
 
@@ -292,8 +334,13 @@ void *ToxHandler::Entry()
     return 0;
 }
 
-ToxHandler::ToxHandler(Tox *t, bool *b, MainFrame *mFrame) : wxThread(wxTHREAD_DETACHED), mTox(t), mShouldRun(b), mFrame(mFrame)
+ToxHandler::ToxHandler(MainFrame *mFrame) : wxThread(wxTHREAD_DETACHED), mFrame(mFrame)
 {
 }
 
-ToxHandler::~ToxHandler() {}
+ToxHandler::~ToxHandler()
+{
+    wxCriticalSectionLocker enter(mFrame->mTHandlerCS);
+    // the thread is being destroyed; make sure not to leave dangling pointers around
+    mFrame->mTHandler = NULL;
+}

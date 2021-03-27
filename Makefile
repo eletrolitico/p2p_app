@@ -13,7 +13,7 @@ CC=g++
 
 # Flags for compiler
 CC_FLAGS = -g -c -Wall $(shell wx-config --cxxflags std)
-LD_FLAGS = $(shell wx-config --cxxflags --libs std) -ltoxcore -lsodium
+LD_FLAGS = $(shell wx-config --cxxflags --libs std) -ltoxcore
 
 # Command used at clean target
 RM = rm -rf

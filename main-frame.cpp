@@ -5,30 +5,23 @@
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_CLOSE(MainFrame::OnClose)
     EVT_BUTTON(CONNECT_BTN, MainFrame::OnButtonClicked)
+    EVT_COMMAND(wxID_ANY,wxEVT_TOX_ID,MainFrame::OnToxID)
 wxEND_EVENT_TABLE()
 
 MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), MAIN_STYLE)
 {
-    TOX_ERR_NEW err_new;
-    Tox *mTox = tox_new(NULL, &err_new);
-    if (err_new != TOX_ERR_NEW_OK)
-    {
-        fprintf(stderr, "tox_new failed with error code %d\n", err_new);
-        exit(1);
-    }
-
-    mTHandler = new ToxHandler(mTox, &mIsRunning, this);
+    mTHandler = new ToxHandler(this);
 
     //labels
     mMyIDLabel = new wxStaticText(this, wxID_ANY, "My ID/Name:", wxPoint(30, 30), wxSize(300, 20), wxALIGN_LEFT, "label");
     mFriendIDLabel = new wxStaticText(this, wxID_ANY, "Friend ID:", wxPoint(30, 30), wxSize(300, 20), wxALIGN_LEFT, "label");
 
     //ctrl
-    mMyIDCtrl = new wxTextCtrl(this, wxID_ANY, "ID: ", wxPoint(10, 10), wxSize(300, 20), wxTE_READONLY);
     mFriendIDCtrl = new wxTextCtrl(this, wxID_ANY, "Friend ID here", wxPoint(10, 10), wxSize(300, 20));
     mMyNameCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxPoint(10, 10), wxSize(300, 20));
     mMyNameCtrl->SetFocus();
 
+    mMyIDCtrl = new wxTextCtrl(this, wxID_ANY, "ID: ", wxPoint(10, 10), wxSize(300, 20), wxTE_READONLY);
     mMyIDCtrl->Bind(wxEVT_TEXT, &MainFrame::OnTxtEdit, this);
 
     //btn
@@ -71,12 +64,6 @@ void MainFrame::CreateUserInterface()
 
 void MainFrame::OnButtonClicked(wxCommandEvent &evt)
 {
-    if (mIsRunning)
-    {
-        evt.Skip();
-        return;
-    }
-
     if (std::string(mMyNameCtrl->GetValue()).empty() || std::string(mFriendIDCtrl->GetValue()).empty())
     {
         evt.Skip();
@@ -85,11 +72,10 @@ void MainFrame::OnButtonClicked(wxCommandEvent &evt)
 
     mConnectBtn->Enable(false);
 
-    mIsRunning = true;
     mTHandler->Run();
 
-    MessageDialog *message = new MessageDialog(wxT("Messages"));
-    message->Show(true);
+    //MessageDialog *message = new MessageDialog(wxT("Messages"));
+    //message->Show(true);
 
     printf("clicked\n");
     evt.Skip();
@@ -103,14 +89,17 @@ void MainFrame::OnTxtEdit(wxCommandEvent &evt)
 
 void MainFrame::OnClose(wxCloseEvent &evt)
 {
-    mIsRunning = false;
+    if (m_isDeleting)
+        return;
+    mTHandler->Delete();
+    m_isDeleting = true;
+    Destroy();
+}
 
-    if (mTHandler)
-    {
-        mTHandler->Delete();
-        delete mTHandler;
-    }
-
+void MainFrame::OnToxID(wxCommandEvent &evt)
+{
+    *mMyIDCtrl << mTHandler->m_toxID;
+    std::cout << "entrei no ontoxid" << std::endl;
     evt.Skip();
 }
 

@@ -12,6 +12,8 @@
 
 class MainFrame;
 
+wxDECLARE_EVENT(wxEVT_TOX_ID, wxThreadEvent);
+
 typedef struct
 {
     uint32_t friend_num;
@@ -39,14 +41,13 @@ typedef struct
 class ToxHandler : public wxThread
 {
 public:
-    ToxHandler(Tox *, bool *, MainFrame *);
+    ToxHandler(MainFrame *);
     ~ToxHandler();
 
-    virtual void *Entry() override;
+    virtual ExitCode Entry() override;
+    std::string m_toxID;
 
 private:
-    Tox *mTox;
-    bool *mShouldRun;
     MainFrame *mFrame;
 
     void setup_tox();

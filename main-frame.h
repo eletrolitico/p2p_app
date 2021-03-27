@@ -6,20 +6,17 @@
 #include <string>
 
 #include "tox-handler.h"
-#include "message-dlg.h"
-
 class ToxHandler;
+
+#include "message-dlg.h"
 
 class MainFrame : public wxFrame
 {
 private:
     void CreateUserInterface();
 
-    Tox *mTox{nullptr};
-    bool mIsRunning{false};
     bool mBtnConnectedClicked{false};
-
-    ToxHandler *mTHandler{nullptr};
+    bool m_isDeleting{false};
 
 public:
     MainFrame();
@@ -43,11 +40,16 @@ public:
     //buttons
     wxButton *mConnectBtn;
 
+    // Event handlers
     void OnClose(wxCloseEvent &evt);
-
     void OnButtonClicked(wxCommandEvent &evt);
     void OnTxtEdit(wxCommandEvent &evt);
+    void OnToxID(wxCommandEvent &evt);
+
     void AddToClipBoard(char *txt);
+
+    ToxHandler *mTHandler{nullptr};
+    wxCriticalSection mTHandlerCS;
 
     wxDECLARE_EVENT_TABLE();
 };
