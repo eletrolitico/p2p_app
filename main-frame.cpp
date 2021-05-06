@@ -22,8 +22,8 @@ MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30),
     m_sendBtn = new wxButton(this, SEND_BTN, "Send", wxDefaultPosition, wxSize(60, 30));
 
     // list boxes
-    m_friendsBox = new wxListBox(this, wxID_ANY,wxDefaultPosition,wxSize(460,500));
-    m_messageBox = new wxListBox(this, wxID_ANY,wxDefaultPosition,wxSize(400,500));
+    m_friendsBox = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(460, 500));
+    m_messageBox = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(400, 500));
 
     auto nameSz = new wxBoxSizer(wxHORIZONTAL);
     auto messageSz = new wxBoxSizer(wxHORIZONTAL);
@@ -49,7 +49,7 @@ MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30),
     main->Add(left);
     main->Add(right);
 
-    top->Add(m_toxIDCtrl);
+    top->Add(m_toxIDCtrl, 0, wxALIGN_CENTER);
     top->Add(main);
 
     SetSizerAndFit(top);
@@ -70,7 +70,6 @@ void MainFrame::OnChangeName(wxCommandEvent &evt)
     mTHandler->SetName(m_nameCtrl->GetValue().ToStdString());
     evt.Skip();
 }
-
 
 void MainFrame::OnClose(wxCloseEvent &evt)
 {

@@ -318,9 +318,8 @@ void ToxHandler::setup_tox()
 {
     create_tox();
     init_friends();
-    bootstrap();
-
     wxQueueEvent(mFrame, new wxThreadEvent(wxEVT_TOX_INIT));
+    bootstrap();
 
     ////// register callbacks
 
