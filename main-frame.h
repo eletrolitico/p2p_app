@@ -8,7 +8,7 @@
 #include "tox-handler.h"
 class ToxHandler;
 
-#include "message-dlg.h"
+#include "messagebox.h"
 
 class MainFrame : public wxFrame
 {
@@ -33,7 +33,7 @@ public:
     wxTextCtrl *m_nameCtrl;
     wxTextCtrl *m_messageCtrl;
     wxListBox *m_friendsBox;
-    wxListBox *m_messageBox;
+    MessageBox *m_messageBox;
 
     //buttons
     wxButton *m_nameBtn;

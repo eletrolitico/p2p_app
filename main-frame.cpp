@@ -4,12 +4,12 @@
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_CLOSE(MainFrame::OnClose)
-    EVT_BUTTON(SEND_BTN, MainFrame::OnSendMessage)
-    EVT_BUTTON(NAME_BTN, MainFrame::OnChangeName)
-    EVT_COMMAND(wxID_ANY, wxEVT_TOX_INIT, MainFrame::OnToxID)
-wxEND_EVENT_TABLE()
+        EVT_BUTTON(SEND_BTN, MainFrame::OnSendMessage)
+            EVT_BUTTON(NAME_BTN, MainFrame::OnChangeName)
+                EVT_COMMAND(wxID_ANY, wxEVT_TOX_INIT, MainFrame::OnToxID)
+                    wxEND_EVENT_TABLE()
 
-MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), MAIN_STYLE)
+                        MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), wxDEFAULT_FRAME_STYLE)
 {
 
     //ctrl
@@ -23,7 +23,7 @@ MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30),
 
     // list boxes
     m_friendsBox = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(460, 500));
-    m_messageBox = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(400, 500));
+    m_messageBox = new MessageBox(this, wxID_ANY, wxDefaultPosition, wxSize(400, 500));
 
     auto nameSz = new wxBoxSizer(wxHORIZONTAL);
     auto messageSz = new wxBoxSizer(wxHORIZONTAL);
@@ -34,23 +34,23 @@ MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30),
     auto main = new wxBoxSizer(wxHORIZONTAL);
     auto top = new wxBoxSizer(wxVERTICAL);
 
-    nameSz->Add(m_nameCtrl);
+    nameSz->Add(m_nameCtrl, 1);
     nameSz->Add(m_nameBtn);
 
-    messageSz->Add(m_messageCtrl);
+    messageSz->Add(m_messageCtrl, 1);
     messageSz->Add(m_sendBtn);
 
-    left->Add(nameSz);
-    left->Add(m_friendsBox);
+    left->Add(nameSz, 0, wxEXPAND);
+    left->Add(m_friendsBox, 1, wxEXPAND);
 
-    right->Add(m_messageBox);
-    right->Add(messageSz);
+    right->Add(m_messageBox, 1, wxEXPAND);
+    right->Add(messageSz, 0, wxEXPAND);
 
-    main->Add(left);
-    main->Add(right);
+    main->Add(left, 0, wxEXPAND);
+    main->Add(right, 1, wxEXPAND);
 
-    top->Add(m_toxIDCtrl, 0, wxALIGN_CENTER);
-    top->Add(main);
+    top->Add(m_toxIDCtrl, 0, wxEXPAND);
+    top->Add(main, 1, wxEXPAND);
 
     SetSizerAndFit(top);
 
@@ -62,6 +62,9 @@ MainFrame::~MainFrame() {}
 
 void MainFrame::OnSendMessage(wxCommandEvent &evt)
 {
+    m_messageBox->SwitchFriend(0);
+    m_messageBox->AddMessage("voce: " + m_messageCtrl->GetValue(), false);
+    m_messageCtrl->SetValue("");
     evt.Skip();
 }
 
