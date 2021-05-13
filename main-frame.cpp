@@ -4,12 +4,12 @@
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_CLOSE(MainFrame::OnClose)
-        EVT_BUTTON(SEND_BTN, MainFrame::OnSendMessage)
-            EVT_BUTTON(NAME_BTN, MainFrame::OnChangeName)
-                EVT_COMMAND(wxID_ANY, wxEVT_TOX_INIT, MainFrame::OnToxID)
-                    wxEND_EVENT_TABLE()
+    EVT_BUTTON(SEND_BTN, MainFrame::OnSendMessage)
+    EVT_BUTTON(NAME_BTN, MainFrame::OnChangeName)
+    EVT_COMMAND(wxID_ANY, wxEVT_TOX_INIT, MainFrame::OnToxID)
+wxEND_EVENT_TABLE()
 
-                        MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), wxDEFAULT_FRAME_STYLE)
+MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), wxDEFAULT_FRAME_STYLE)
 {
 
     //ctrl
