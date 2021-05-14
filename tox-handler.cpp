@@ -181,7 +181,7 @@ void friend_request_cb(Tox *tox, const uint8_t *public_key, const uint8_t *messa
 void self_connection_status_cb(Tox *tox, TOX_CONNECTION connection_status, void *user_data)
 {
     self.connection = connection_status;
-    printf("* You are %s", connection_enum2text(connection_status));
+    printf("* You are %s\n", connection_enum2text(connection_status));
 }
 
 void ToxHandler::create_tox()
@@ -343,13 +343,14 @@ void *ToxHandler::Entry()
     uint32_t elapsedTime = 0;
     while (!TestDestroy())
     {
+        tox_iterate(mTox, NULL);
+
         if (elapsedTime / 1000 > SAVE_DATA_INTERVAL)
         {
             update_savedata_file();
             //std::cout << "saving..." << std::endl;
             elapsedTime = 0;
         }
-        tox_iterate(mTox, NULL);
 
         uint32_t v = tox_iteration_interval(mTox);
         this->Sleep(v);

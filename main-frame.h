@@ -45,8 +45,6 @@ public:
     void OnChangeName(wxCommandEvent &evt);
     void OnToxID(wxCommandEvent &evt);
 
-    void AddToClipBoard(char *txt);
-
     ToxHandler *mTHandler{nullptr};
     wxCriticalSection mTHandlerCS;
 

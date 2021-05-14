@@ -78,8 +78,11 @@ void MainFrame::OnClose(wxCloseEvent &evt)
 {
     if (m_isDeleting)
         return;
+
     mTHandler->Delete();
     m_isDeleting = true;
+    // Esse sleep resolve o problema de terminar a thread
+    sleep(1);
     Destroy();
 }
 
@@ -89,24 +92,4 @@ void MainFrame::OnToxID(wxCommandEvent &evt)
     *m_nameCtrl << mTHandler->m_name;
     //std::cout << "entrei no ontoxid" << std::endl;
     evt.Skip();
-}
-
-void MainFrame::AddToClipBoard(char *txt)
-{
-    bool isOk = false;
-    wxClipboard *clip = new wxClipboard();
-    if (clip->Open())
-    {
-        clip->Clear();
-        clip->SetData(new wxTextDataObject(wxString::FromUTF8(txt)));
-        clip->Flush();
-        clip->Close();
-
-        isOk = true;
-    }
-
-    delete clip;
-
-    if (!isOk)
-        ::wxMessageBox("The clipboard copy failed", "Error", wxICON_ERROR | wxCENTRE);
 }
