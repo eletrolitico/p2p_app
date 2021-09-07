@@ -1,15 +1,19 @@
 #include "main-frame.h"
 
+#include "requestdlg.h"
+
 #define MAIN_STYLE wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_CLOSE(MainFrame::OnClose)
-    EVT_BUTTON(SEND_BTN, MainFrame::OnSendMessage)
-    EVT_BUTTON(NAME_BTN, MainFrame::OnChangeName)
-    EVT_COMMAND(wxID_ANY, wxEVT_TOX_INIT, MainFrame::OnToxID)
-wxEND_EVENT_TABLE()
+        EVT_BUTTON(SEND_BTN, MainFrame::OnSendMessage)
+            EVT_BUTTON(NAME_BTN, MainFrame::OnChangeName)
+                EVT_BUTTON(ADD_BTN, MainFrame::OnFriendAdd)
+                    EVT_COMMAND(wxID_ANY, wxEVT_TOX_INIT, MainFrame::OnToxID)
+                        EVT_COMMAND(wxID_ANY, wxEVT_TOX_FRIEND_ADD, MainFrame::OnFriendRequest)
+                            wxEND_EVENT_TABLE()
 
-MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), wxDEFAULT_FRAME_STYLE)
+                                MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), wxDEFAULT_FRAME_STYLE)
 {
 
     //ctrl
@@ -20,6 +24,7 @@ MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30),
     //btn
     m_nameBtn = new wxButton(this, NAME_BTN, "Change", wxDefaultPosition, wxSize(60, 30));
     m_sendBtn = new wxButton(this, SEND_BTN, "Send", wxDefaultPosition, wxSize(60, 30));
+    m_addBtn = new wxButton(this, ADD_BTN, "Add friend", wxDefaultPosition, wxSize(60, 30));
 
     // list boxes
     m_friendsBox = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(460, 500));
@@ -42,6 +47,7 @@ MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30),
 
     left->Add(nameSz, 0, wxEXPAND);
     left->Add(m_friendsBox, 1, wxEXPAND);
+    left->Add(m_addBtn, 0, wxEXPAND);
 
     right->Add(m_messageBox, 1, wxEXPAND);
     right->Add(messageSz, 0, wxEXPAND);
@@ -92,4 +98,27 @@ void MainFrame::OnToxID(wxCommandEvent &evt)
     *m_nameCtrl << mTHandler->m_name;
     //std::cout << "entrei no ontoxid" << std::endl;
     evt.Skip();
+}
+
+void MainFrame::OnFriendRequest(wxCommandEvent &evt)
+{
+    auto reqs = mTHandler->GetRequests();
+
+    while (reqs.size())
+    {
+        Request r = reqs[reqs.size() - 1];
+        reqs.pop_back();
+        //auto dlg = new RequestDlg(r, this, wxID_ANY, "aceitar amigo");
+    }
+}
+
+void MainFrame::OnFriendAdd(wxCommandEvent &evt)
+{
+    auto dlg = new RequestDlg(&MainFrame::AddFrndCb,this,wxID_ANY,"Add a friend");
+    dlg->Show();
+    std::cout << "Show add dlg" << std::endl;
+}
+
+void MainFrame::AddFrndCb(){
+    std::cout << "Called cb" << std::endl;
 }

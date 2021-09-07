@@ -4,6 +4,7 @@
 #include <iomanip>
 
 wxDEFINE_EVENT(wxEVT_TOX_INIT, wxThreadEvent);
+wxDEFINE_EVENT(wxEVT_TOX_FRIEND_ADD, wxThreadEvent);
 
 typedef struct DHT_node
 {
@@ -30,6 +31,8 @@ DHT_node bootstrap_nodes[] = {
 };
 
 Tox *mTox = NULL;
+// Mas isso vai dar ruim de um jeito
+MainFrame *local_mFrame = NULL;
 Friend self;
 std::vector<Friend *> mFriends;
 std::vector<Request> mRequests;
@@ -176,6 +179,7 @@ void friend_request_cb(Tox *tox, const uint8_t *public_key, const uint8_t *messa
     sprintf(req.msg, "%.*s", (int)length, (char *)message);
 
     mRequests.push_back(req);
+    wxQueueEvent(local_mFrame, new wxThreadEvent(wxEVT_TOX_FRIEND_ADD));
 }
 
 void self_connection_status_cb(Tox *tox, TOX_CONNECTION connection_status, void *user_data)
@@ -316,6 +320,7 @@ void ToxHandler::bootstrap()
 
 void ToxHandler::setup_tox()
 {
+    local_mFrame = mFrame;
     create_tox();
     init_friends();
     wxQueueEvent(mFrame, new wxThreadEvent(wxEVT_TOX_INIT));
@@ -367,6 +372,41 @@ void ToxHandler::SetName(const std::string &str)
 {
     m_name = str;
     tox_self_set_name(mTox, (uint8_t *)str.c_str(), str.size(), NULL);
+}
+
+std::vector<Request> ToxHandler::GetRequests()
+{
+    return mRequests;
+}
+
+void ToxHandler::AddFriend(wxString toxID, wxString msg)
+{
+    uint8_t *bin_id = hex2bin(toxID.c_str());
+    TOX_ERR_FRIEND_ADD err;
+    uint32_t friend_num = tox_friend_add(mTox, bin_id, (uint8_t *)msg.c_str().AsChar(), msg.length(), &err);
+    free(bin_id);
+
+    if (err != TOX_ERR_FRIEND_ADD_OK)
+    {
+        printf("! add friend failed, errcode:%d", err);
+        return;
+    }
+
+    add_friend(friend_num);
+}
+
+void ToxHandler::AcceptRequest(Request req)
+{
+    TOX_ERR_FRIEND_ADD err;
+    uint32_t friend_num = tox_friend_add_norequest(mTox, req.userdata.pubkey, &err);
+    if (err != TOX_ERR_FRIEND_ADD_OK)
+    {
+        printf("! accept friend request failed, errcode:%d", err);
+    }
+    else
+    {
+        add_friend(friend_num);
+    }
 }
 
 ToxHandler::ToxHandler(MainFrame *mFrame) : wxThread(wxTHREAD_DETACHED), mFrame(mFrame)

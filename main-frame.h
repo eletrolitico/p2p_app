@@ -24,7 +24,8 @@ public:
     {
         MAIN_FRAME = wxID_HIGHEST + 1,
         NAME_BTN,
-        SEND_BTN
+        SEND_BTN,
+        ADD_BTN
     };
 
 public:
@@ -38,12 +39,17 @@ public:
     //buttons
     wxButton *m_nameBtn;
     wxButton *m_sendBtn;
+    wxButton *m_addBtn;
 
     // Event handlers
     void OnClose(wxCloseEvent &evt);
     void OnSendMessage(wxCommandEvent &evt);
     void OnChangeName(wxCommandEvent &evt);
     void OnToxID(wxCommandEvent &evt);
+    void OnFriendRequest(wxCommandEvent &evt);
+    void OnFriendAdd(wxCommandEvent &evt);
+
+    void AddFrndCb();
 
     ToxHandler *mTHandler{nullptr};
     wxCriticalSection mTHandlerCS;

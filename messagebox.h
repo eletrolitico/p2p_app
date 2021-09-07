@@ -1,6 +1,7 @@
 #include <wx/wx.h>
 
 #include <unordered_map>
+#include <vector>
 
 class MessageBox : public wxScrolledWindow
 {

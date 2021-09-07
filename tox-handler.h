@@ -14,6 +14,7 @@
 class MainFrame;
 
 wxDECLARE_EVENT(wxEVT_TOX_INIT, wxThreadEvent);
+wxDECLARE_EVENT(wxEVT_TOX_FRIEND_ADD, wxThreadEvent);
 
 typedef struct
 {
@@ -50,6 +51,9 @@ public:
     std::string m_name;
 
     void SetName(const std::string &);
+    std::vector<Request> GetRequests();
+    void AcceptRequest(Request);
+    void AddFriend(wxString toxID, wxString msg);
 
 private:
     MainFrame *mFrame;
