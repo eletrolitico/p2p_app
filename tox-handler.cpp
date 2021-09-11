@@ -3,8 +3,9 @@
 #include <sstream>
 #include <iomanip>
 
-wxDEFINE_EVENT(wxEVT_TOX_INIT, wxThreadEvent);
-wxDEFINE_EVENT(wxEVT_TOX_FRIEND_ADD, wxThreadEvent);
+wxDEFINE_EVENT(wxEVT_TOX_INIT, wxCommandEvent);
+wxDEFINE_EVENT(wxEVT_TOX_FRIEND_ADD, wxCommandEvent);
+wxDEFINE_EVENT(wxEVT_TOX_FRIEND_STATUS, wxCommandEvent);
 
 typedef struct DHT_node
 {
@@ -134,6 +135,12 @@ void friend_message_cb(Tox *tox, uint32_t friend_num, TOX_MESSAGE_TYPE type, con
 
     f->hist.push_back(std::string((char *)message));
 
+    auto evt = new wxCommandEvent(wxEVT_TOX_FRIEND_STATUS);
+    evt->SetInt(friend_num);
+    evt->SetString(wxString((char *)message));
+    evt->SetId(FriendUpdate::MESSAGE);
+    wxQueueEvent(local_mFrame, evt);
+
     printf("* receive message from %s", f->name);
 }
 
@@ -145,6 +152,12 @@ void friend_name_cb(Tox *tox, uint32_t friend_num, const uint8_t *name, size_t l
     {
         f->name = (char *)realloc(f->name, length + 1);
         sprintf(f->name, "%.*s", (int)length, (char *)name);
+
+        auto evt = new wxCommandEvent(wxEVT_TOX_FRIEND_STATUS);
+        evt->SetInt(friend_num);
+        evt->SetString(wxString(f->name));
+        evt->SetId(FriendUpdate::NAME);
+        wxQueueEvent(local_mFrame, evt);
     }
 }
 
@@ -155,6 +168,11 @@ void friend_status_message_cb(Tox *tox, uint32_t friend_num, const uint8_t *mess
     {
         f->status_message = (char *)realloc(f->status_message, length + 1);
         sprintf(f->status_message, "%.*s", (int)length, (char *)message);
+
+        auto evt = new wxCommandEvent(wxEVT_TOX_FRIEND_STATUS);
+        evt->SetInt(friend_num);
+        evt->SetId(FriendUpdate::STATUS_MSG);
+        wxQueueEvent(local_mFrame, evt);
     }
 }
 
@@ -166,6 +184,12 @@ void friend_connection_status_cb(Tox *tox, uint32_t friend_num, TOX_CONNECTION c
         f->connection = connection_status;
         printf("* %s is %s", f->name, connection_enum2text(connection_status));
     }
+
+    auto evt = new wxCommandEvent(wxEVT_TOX_FRIEND_STATUS);
+    evt->SetInt(friend_num);
+    evt->SetString(wxString(connection_enum2text(connection_status)));
+    evt->SetId(FriendUpdate::CON_STATUS);
+    wxQueueEvent(local_mFrame, evt);
 }
 
 void friend_request_cb(Tox *tox, const uint8_t *public_key, const uint8_t *message, size_t length, void *user_data)
@@ -179,7 +203,7 @@ void friend_request_cb(Tox *tox, const uint8_t *public_key, const uint8_t *messa
     sprintf(req.msg, "%.*s", (int)length, (char *)message);
 
     mRequests.push_back(req);
-    wxQueueEvent(local_mFrame, new wxThreadEvent(wxEVT_TOX_FRIEND_ADD));
+    wxQueueEvent(local_mFrame, new wxCommandEvent(wxEVT_TOX_FRIEND_ADD));
 }
 
 void self_connection_status_cb(Tox *tox, TOX_CONNECTION connection_status, void *user_data)
@@ -323,7 +347,7 @@ void ToxHandler::setup_tox()
     local_mFrame = mFrame;
     create_tox();
     init_friends();
-    wxQueueEvent(mFrame, new wxThreadEvent(wxEVT_TOX_INIT));
+    wxQueueEvent(mFrame, new wxCommandEvent(wxEVT_TOX_INIT));
     bootstrap();
 
     ////// register callbacks
@@ -379,34 +403,59 @@ std::vector<Request> ToxHandler::GetRequests()
     return mRequests;
 }
 
-void ToxHandler::AddFriend(wxString toxID, wxString msg)
+std::vector<Friend *> ToxHandler::GetFriends()
 {
-    uint8_t *bin_id = hex2bin(toxID.c_str());
+    return mFriends;
+}
+
+Friend *ToxHandler::GetFriend(uint32_t fNum)
+{
+    return getfriend(fNum);
+}
+
+void ToxHandler::SendMessage(uint32_t fNum, wxString msg)
+{
+    TOX_ERR_FRIEND_SEND_MESSAGE err;
+    tox_friend_send_message(mTox, fNum, TOX_MESSAGE_TYPE_NORMAL, (uint8_t *)msg.c_str().AsChar(), msg.length(), &err);
+    if (err != TOX_ERR_FRIEND_SEND_MESSAGE_OK)
+    {
+        std::cout << "Erro ao mandar msg: " << err << std::endl;
+    }
+}
+
+uint32_t ToxHandler::AddFriend(wxString toxID, wxString msg)
+{
+    std::cout << "Id antes de coisar " << toxID << "... msg: " << msg << std::endl;
+    const char *tId = toxID.c_str().AsChar();
+    printf("Id com printf: %s\n", tId);
+
+    uint8_t *bin_id = hex2bin(tId);
     TOX_ERR_FRIEND_ADD err;
     uint32_t friend_num = tox_friend_add(mTox, bin_id, (uint8_t *)msg.c_str().AsChar(), msg.length(), &err);
     free(bin_id);
 
     if (err != TOX_ERR_FRIEND_ADD_OK)
     {
-        printf("! add friend failed, errcode:%d", err);
-        return;
+        printf("! add friend with id %s failed, errcode:%d\n", tId, err);
+        return -1;
     }
 
     add_friend(friend_num);
+    return friend_num;
 }
 
-void ToxHandler::AcceptRequest(Request req)
+uint32_t ToxHandler::AcceptRequest(Request req)
 {
     TOX_ERR_FRIEND_ADD err;
     uint32_t friend_num = tox_friend_add_norequest(mTox, req.userdata.pubkey, &err);
     if (err != TOX_ERR_FRIEND_ADD_OK)
     {
         printf("! accept friend request failed, errcode:%d", err);
+        return -1;
     }
-    else
-    {
-        add_friend(friend_num);
-    }
+
+    add_friend(friend_num);
+    return friend_num;
 }
 
 ToxHandler::ToxHandler(MainFrame *mFrame) : wxThread(wxTHREAD_DETACHED), mFrame(mFrame)

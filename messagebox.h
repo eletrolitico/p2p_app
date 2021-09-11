@@ -9,7 +9,7 @@ private:
   wxFont senderFont;
   wxBoxSizer *sizer;
   std::unordered_map<int, std::vector<std::tuple<wxString, bool>>> m_Messages;
-  int curFriend = -1;
+  uint32_t curFriend = -1;
 
 public:
   MessageBox(wxWindow *parent,
@@ -23,5 +23,7 @@ public:
   void ClearMsg();
 
   void AddMessage(const wxString &msg, bool isSender);
-  void SwitchFriend(int fID);
+  void AddMessage(uint32_t fNum, const wxString &msg);
+  void SwitchFriend(uint32_t fID);
+  inline uint32_t GetCurrFriend() { return curFriend; }
 };

@@ -5,24 +5,6 @@ MessageBox::MessageBox(wxWindow *parent, wxWindowID winid, const wxPoint &pos, c
 {
     sizer = new wxBoxSizer(wxVERTICAL);
 
-    for (size_t i = 0; i < 100; ++i)
-    {
-        std::string n = i % 2 == 0 ? "voce: teste " : "outro: teste ";
-        n += std::to_string(i);
-        wxStaticText *test = new wxStaticText(this, wxID_ANY, n);
-        if (i % 2)
-        {
-            test->SetFont(senderFont);
-            test->SetForegroundColour(wxColour("#00ff00"));
-        }
-        else
-        {
-            test->SetForegroundColour(wxColour("#5555ff"));
-        }
-
-        sizer->Add(test, 1, wxEXPAND);
-    }
-
     this->SetSizer(sizer);
 
     this->FitInside();
@@ -70,7 +52,13 @@ void MessageBox::AddMessage(const wxString &msg, bool isSender)
     this->Refresh();
 }
 
-void MessageBox::SwitchFriend(int fID)
+void MessageBox::AddMessage(uint32_t fNum, const wxString &msg)
+{
+    auto tp = std::make_tuple(msg, false);
+    m_Messages[fNum].push_back(tp);
+}
+
+void MessageBox::SwitchFriend(uint32_t fID)
 {
     if (fID == curFriend)
         return;

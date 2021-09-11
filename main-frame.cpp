@@ -1,20 +1,10 @@
 #include "main-frame.h"
+#include "main-frame-events.h"
 
-#include "requestdlg.h"
-
-#define MAIN_STYLE wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN
-
-wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
-    EVT_CLOSE(MainFrame::OnClose)
-        EVT_BUTTON(SEND_BTN, MainFrame::OnSendMessage)
-            EVT_BUTTON(NAME_BTN, MainFrame::OnChangeName)
-                EVT_BUTTON(ADD_BTN, MainFrame::OnFriendAdd)
-                    EVT_COMMAND(wxID_ANY, wxEVT_TOX_INIT, MainFrame::OnToxID)
-                        EVT_COMMAND(wxID_ANY, wxEVT_TOX_FRIEND_ADD, MainFrame::OnFriendRequest)
-                            wxEND_EVENT_TABLE()
-
-                                MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), wxDEFAULT_FRAME_STYLE)
+MainFrame::MainFrame() : wxFrame(nullptr, wxID_ANY, "Chat P2P", wxPoint(30, 30), wxSize(800, 600), wxDEFAULT_FRAME_STYLE)
 {
+    Bind(FRIEND_ADD_CB, &MainFrame::AddFrndCb, this);
+    Bind(FRIEND_ACCEPT_CB, &MainFrame::AcceptFrndCb, this);
 
     //ctrl
     m_toxIDCtrl = new wxTextCtrl(this, wxID_ANY, "ID: ", wxDefaultPosition, wxSize(800, 30), wxTE_READONLY);
@@ -62,22 +52,32 @@ wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
 
     mTHandler = new ToxHandler(this);
     mTHandler->Run();
+
+    /*********************
+     ***** test code *****
+     *********************/
 }
 
 MainFrame::~MainFrame() {}
 
 void MainFrame::OnSendMessage(wxCommandEvent &evt)
 {
-    m_messageBox->SwitchFriend(0);
-    m_messageBox->AddMessage("voce: " + m_messageCtrl->GetValue(), false);
+    if (m_messageBox->GetCurrFriend() == -1)
+        return;
+    m_messageBox->AddMessage("voce: " + m_messageCtrl->GetValue(), true);
+    mTHandler->SendMessage(m_messageBox->GetCurrFriend(), m_messageCtrl->GetValue());
     m_messageCtrl->SetValue("");
-    evt.Skip();
 }
 
 void MainFrame::OnChangeName(wxCommandEvent &evt)
 {
     mTHandler->SetName(m_nameCtrl->GetValue().ToStdString());
-    evt.Skip();
+}
+
+void MainFrame::OnSwitchFriend(wxCommandEvent &evt)
+{
+    std::cout << "talking to fren: " << evt.GetSelection() << std::endl;
+    m_messageBox->SwitchFriend(evt.GetSelection());
 }
 
 void MainFrame::OnClose(wxCloseEvent &evt)
@@ -96,8 +96,13 @@ void MainFrame::OnToxID(wxCommandEvent &evt)
 {
     *m_toxIDCtrl << mTHandler->m_toxID;
     *m_nameCtrl << mTHandler->m_name;
+    auto frnds = mTHandler->GetFriends();
+
+    for (auto f : frnds)
+    {
+        m_friendsBox->Insert(wxString(f->name) + " - " + std::to_string(f->friend_num) + " - " + wxString(f->status_message), f->friend_num);
+    }
     //std::cout << "entrei no ontoxid" << std::endl;
-    evt.Skip();
 }
 
 void MainFrame::OnFriendRequest(wxCommandEvent &evt)
@@ -108,17 +113,58 @@ void MainFrame::OnFriendRequest(wxCommandEvent &evt)
     {
         Request r = reqs[reqs.size() - 1];
         reqs.pop_back();
-        //auto dlg = new RequestDlg(r, this, wxID_ANY, "aceitar amigo");
+        auto dlg = new RequestDlg(r, this, wxID_ANY, "aceitar amigo");
+        dlg->Show();
+        dlg->Bind(FRIEND_ADD_CB, &MainFrame::AddFrndCb, this, wxID_ANY);
+        dlg->Bind(FRIEND_ACCEPT_CB, &MainFrame::AcceptFrndCb, this, wxID_ANY);
     }
 }
 
 void MainFrame::OnFriendAdd(wxCommandEvent &evt)
 {
-    auto dlg = new RequestDlg(&MainFrame::AddFrndCb,this,wxID_ANY,"Add a friend");
+    auto dlg = new RequestDlg(this, wxID_ANY, "Add a friend");
     dlg->Show();
-    std::cout << "Show add dlg" << std::endl;
+    dlg->Bind(FRIEND_ADD_CB, &MainFrame::AddFrndCb, this);
+    dlg->Bind(FRIEND_ACCEPT_CB, &MainFrame::AcceptFrndCb, this);
 }
 
-void MainFrame::AddFrndCb(){
-    std::cout << "Called cb" << std::endl;
+void MainFrame::AddFrndCb(RequestDlgEvt &evt)
+{
+    uint32_t fNum = mTHandler->AddFriend(evt.getToxID(), evt.getMessage());
+    if (fNum != -1)
+    {
+        m_friendsBox->Insert("pending - " + std::to_string(fNum) + " - pending", fNum);
+    }
+}
+
+void MainFrame::AcceptFrndCb(RequestDlgEvt &evt)
+{
+    uint32_t fNum = mTHandler->AcceptRequest(evt.getRequest());
+    if (fNum != -1)
+    {
+        m_friendsBox->Insert("pending - " + std::to_string(fNum) + " - pending", fNum);
+    }
+}
+
+void MainFrame::OnFriendStatusUpdate(wxCommandEvent &evt)
+{
+    switch (evt.GetId())
+    {
+    case FriendUpdate::MESSAGE:
+        if (m_messageBox->GetCurrFriend() == evt.GetInt())
+        {
+            m_messageBox->AddMessage(evt.GetString(), false);
+        }
+        else
+        {
+            m_messageBox->AddMessage(evt.GetInt(), evt.GetString());
+        }
+        break;
+    case FriendUpdate::NAME:
+    case FriendUpdate::STATUS_MSG:
+    case FriendUpdate::CON_STATUS:
+        auto f = mTHandler->GetFriend(evt.GetInt());
+        m_friendsBox->SetString(evt.GetInt(), wxString(f->name) + " - " + std::to_string(f->friend_num) + " - " + wxString(f->status_message));
+        break;
+    }
 }

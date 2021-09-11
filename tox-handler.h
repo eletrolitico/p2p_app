@@ -5,16 +5,23 @@
 #include <tox/tox.h>
 #include <vector>
 
-#include "main-frame.h"
-
 #define PORT_RANGE_START 33445 // tox listen port range
 #define PORT_RANGE_END 34445
 #define SAVE_DATA_INTERVAL 5 // interval in seconds
 
 class MainFrame;
 
-wxDECLARE_EVENT(wxEVT_TOX_INIT, wxThreadEvent);
-wxDECLARE_EVENT(wxEVT_TOX_FRIEND_ADD, wxThreadEvent);
+wxDECLARE_EVENT(wxEVT_TOX_INIT, wxCommandEvent);
+wxDECLARE_EVENT(wxEVT_TOX_FRIEND_ADD, wxCommandEvent);
+wxDECLARE_EVENT(wxEVT_TOX_FRIEND_STATUS, wxCommandEvent);
+
+typedef enum FriendUpdate
+{
+    MESSAGE,
+    NAME,
+    CON_STATUS,
+    STATUS_MSG
+} FriendUpdate;
 
 typedef struct
 {
@@ -40,6 +47,8 @@ typedef struct
     FriendUserData userdata;
 } Request;
 
+#include "main-frame.h"
+
 class ToxHandler : public wxThread
 {
 public:
@@ -52,8 +61,11 @@ public:
 
     void SetName(const std::string &);
     std::vector<Request> GetRequests();
-    void AcceptRequest(Request);
-    void AddFriend(wxString toxID, wxString msg);
+    std::vector<Friend *> GetFriends();
+    Friend *GetFriend(uint32_t fNum);
+    void SendMessage(uint32_t fNum, wxString msg);
+    uint32_t AcceptRequest(Request);
+    uint32_t AddFriend(wxString toxID, wxString msg);
 
 private:
     MainFrame *mFrame;

@@ -1,11 +1,13 @@
 #include "requestdlg.h"
 
-#include "main-frame.h"
+#include <sstream>
+#include <iomanip>
 
-template <typename Class>
+wxDEFINE_EVENT(FRIEND_ADD_CB, RequestDlgEvt);
+wxDEFINE_EVENT(FRIEND_ACCEPT_CB, RequestDlgEvt);
+
 RequestDlg::RequestDlg(
     Request req,
-    void (Class::*method)(),
     wxWindow *parent, wxWindowID id,
     const wxString &title,
     const wxPoint &pos,
@@ -13,28 +15,10 @@ RequestDlg::RequestDlg(
     long style,
     const wxString &name) : wxDialog(parent, id, title, pos, size, style, name), m_request(req), isAdd(false)
 {
-    this->method = (void (*)())((void *)method);
     InitInterface();
 }
 
-template < >
-RequestDlg::RequestDlg<MainFrame>(
-    Request req,
-    void (MainFrame::*method)(),
-    wxWindow *parent, wxWindowID id,
-    const wxString &title,
-    const wxPoint &pos,
-    const wxSize &size,
-    long style,
-    const wxString &name) : wxDialog(parent, id, title, pos, size, style, name), m_request(req), isAdd(false)
-{
-    this->method = (void (*)())((void *)method);
-    InitInterface();
-}
-
-template <typename Class>
 RequestDlg::RequestDlg(
-    void (Class::*method)(),
     wxWindow *parent, wxWindowID id,
     const wxString &title,
     const wxPoint &pos,
@@ -42,26 +26,12 @@ RequestDlg::RequestDlg(
     long style,
     const wxString &name) : wxDialog(parent, id, title, pos, size, style, name)
 {
-    this->method = (void (*)())((void *)method);
-    InitInterface();
-}
-
-
-template <>
-RequestDlg::RequestDlg<MainFrame>(
-    void (MainFrame::*method)(),
-    wxWindow *parent, wxWindowID id,
-    const wxString &title,
-    const wxPoint &pos,
-    const wxSize &size,
-    long style,
-    const wxString &name) : wxDialog(parent, id, title, pos, size, style, name)
-{
-    this->method = (void (*)())((void *)method);
     InitInterface();
 }
 
 RequestDlg::~RequestDlg() {}
+
+std::string bin2hex(const uint8_t *bin, const size_t len);
 
 void RequestDlg::InitInterface()
 {
@@ -91,7 +61,7 @@ void RequestDlg::InitInterface()
     if (!isAdd)
     {
         m_tox_id->SetEditable(false);
-        m_tox_id->SetValue(m_request.userdata.pubkey);
+        m_tox_id->SetValue(bin2hex(m_request.userdata.pubkey, TOX_PUBLIC_KEY_SIZE));
 
         m_msg->SetEditable(false);
         m_msg->SetValue(m_request.msg);
@@ -105,9 +75,22 @@ void RequestDlg::OnNopeBtn(wxCommandEvent &evt)
     Destroy();
 }
 
-
 void RequestDlg::OnOkBtn(wxCommandEvent &evt)
 {
-    method();
+    if (isAdd)
+    {
+        RequestDlgEvt event(FRIEND_ADD_CB, GetId());
+        event.setToxID(m_tox_id->GetValue());
+        event.setMessage(m_msg->GetValue());
+        event.SetEventObject(this);
+        ProcessWindowEvent(event);
+    }
+    else
+    {
+        RequestDlgEvt event(FRIEND_ACCEPT_CB, GetId());
+        event.setRequest(m_request);
+        event.SetEventObject(this);
+        ProcessWindowEvent(event);
+    }
     Destroy();
 }
