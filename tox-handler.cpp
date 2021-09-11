@@ -155,7 +155,6 @@ void friend_name_cb(Tox *tox, uint32_t friend_num, const uint8_t *name, size_t l
 
         auto evt = new wxCommandEvent(wxEVT_TOX_FRIEND_STATUS);
         evt->SetInt(friend_num);
-        evt->SetString(wxString(f->name));
         evt->SetId(FriendUpdate::NAME);
         wxQueueEvent(local_mFrame, evt);
     }
@@ -187,7 +186,6 @@ void friend_connection_status_cb(Tox *tox, uint32_t friend_num, TOX_CONNECTION c
 
     auto evt = new wxCommandEvent(wxEVT_TOX_FRIEND_STATUS);
     evt->SetInt(friend_num);
-    evt->SetString(wxString(connection_enum2text(connection_status)));
     evt->SetId(FriendUpdate::CON_STATUS);
     wxQueueEvent(local_mFrame, evt);
 }

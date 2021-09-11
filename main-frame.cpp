@@ -164,7 +164,8 @@ void MainFrame::OnFriendStatusUpdate(wxCommandEvent &evt)
     case FriendUpdate::STATUS_MSG:
     case FriendUpdate::CON_STATUS:
         auto f = mTHandler->GetFriend(evt.GetInt());
-        m_friendsBox->SetString(evt.GetInt(), wxString(f->name) + " - " + std::to_string(f->friend_num) + " - " + wxString(f->status_message));
+        std::string con = f->connection == TOX_CONNECTION_NONE ? "Offline" : "Online";
+        m_friendsBox->SetString(evt.GetInt(), wxString(f->name) + " - " + std::to_string(f->friend_num) + " - " + con);
         break;
     }
 }
