@@ -129,7 +129,7 @@ void friend_message_cb(Tox *tox, uint32_t friend_num, TOX_MESSAGE_TYPE type, con
 
     if (type != TOX_MESSAGE_TYPE_NORMAL)
     {
-        printf("* receive MESSAGE ACTION type from %s, no supported", f->name);
+        printf("* receive MESSAGE ACTION type from %s, no supported\n", f->name);
         return;
     }
 
@@ -141,7 +141,7 @@ void friend_message_cb(Tox *tox, uint32_t friend_num, TOX_MESSAGE_TYPE type, con
     evt->SetId(FriendUpdate::MESSAGE);
     wxQueueEvent(local_mFrame, evt);
 
-    printf("* receive message from %s", f->name);
+    printf("* receive message from %s\n", f->name);
 }
 
 void friend_name_cb(Tox *tox, uint32_t friend_num, const uint8_t *name, size_t length, void *user_data)
