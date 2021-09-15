@@ -208,6 +208,7 @@ void ToxHandler::create_tox()
     struct Tox_Options *options = tox_options_new(NULL);
     tox_options_set_start_port(options, PORT_RANGE_START);
     tox_options_set_end_port(options, PORT_RANGE_END);
+    tox_options_set_experimental_thread_safety(options, true);
 
     TOX_ERR_NEW err_new;
 
@@ -339,7 +340,6 @@ void ToxHandler::setup_tox()
     create_tox();
     init_friends();
     wxQueueEvent(mFrame, new wxCommandEvent(wxEVT_TOX_INIT));
-    bootstrap();
 
     ////// register callbacks
 
@@ -352,6 +352,8 @@ void ToxHandler::setup_tox()
     tox_callback_friend_name(mTox, friend_name_cb);
     tox_callback_friend_status_message(mTox, friend_status_message_cb);
     tox_callback_friend_connection_status(mTox, friend_connection_status_cb);
+
+    bootstrap();
 }
 
 void *ToxHandler::Entry()
@@ -360,23 +362,13 @@ void *ToxHandler::Entry()
 
     std::cout << "Connecting..." << std::endl;
 
-    uint32_t elapsedTime = 0;
     while (!TestDestroy())
     {
         tox_iterate(mTox, NULL);
-
-        if (elapsedTime / 1000 > SAVE_DATA_INTERVAL)
-        {
-            update_savedata_file();
-            //std::cout << "saving..." << std::endl;
-            elapsedTime = 0;
-        }
-
-        uint32_t v = tox_iteration_interval(mTox);
-        this->Sleep(v);
-        elapsedTime += v;
+        this->Sleep(tox_iteration_interval(mTox));
     }
 
+    update_savedata_file();
     tox_kill(mTox);
     printf("Exiting thread...\n");
 
