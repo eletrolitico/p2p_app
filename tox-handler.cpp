@@ -379,6 +379,8 @@ void ToxHandler::SetName(const std::string &str)
 {
     m_name = str;
     tox_self_set_name(mTox, (uint8_t *)str.c_str(), str.size(), NULL);
+    auto stsMsg = "sts msg";
+    tox_self_set_status_message(mTox, (uint8_t *)stsMsg, strlen(stsMsg), NULL);
 }
 
 std::vector<Request> ToxHandler::GetRequests()
