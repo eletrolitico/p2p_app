@@ -2,27 +2,13 @@
 
 #include <sstream>
 #include <iomanip>
+#include "tox-nodes.h"
+
+#define COUNTOF(x) (sizeof(x) / sizeof(*(x)))
 
 wxDEFINE_EVENT(wxEVT_TOX_INIT, wxCommandEvent);
 wxDEFINE_EVENT(wxEVT_TOX_FRIEND_ADD, wxCommandEvent);
 wxDEFINE_EVENT(wxEVT_TOX_FRIEND_STATUS, wxCommandEvent);
-
-typedef struct DHT_node
-{
-    const char *ip;
-    uint16_t port;
-    const char key_hex[TOX_PUBLIC_KEY_SIZE * 2 + 1];
-} DHT_node;
-
-DHT_node bootstrap_nodes[] = {
-
-    // Setup tox bootrap nodes
-
-    {"198.199.98.108", 33445, "BEF0CFB37AF874BD17B9A8F9FE64C75521DB95A37D33C5BDB00E9CF58659C04F"},
-    {"205.185.115.131", 53, "3091C6BEB2A993F1C6300C16549FABA67098FF3D62C6D253828B531470B53D68"},
-    {"tox2.abilinski.com", 33445, "7A6098B590BDC73F9723FC59F82B3F9085A64D1B213AAF8E610FD351930D052D"}
-
-};
 
 Tox *mTox = NULL;
 // Mas isso vai dar ruim de um jeito
@@ -203,12 +189,41 @@ void self_connection_status_cb(Tox *tox, TOX_CONNECTION connection_status, void 
     printf("* You are %s\n", connection_enum2text(connection_status));
 }
 
+char *log_level[5] = {
+    "TRACE",
+    "DEBUG",
+    "INFO",
+    "WARNING",
+    "ERROR",
+};
+
+static void log_callback(Tox *tox, TOX_LOG_LEVEL level, const char *file, uint32_t line,
+                         const char *func, const char *message, void *user_data)
+{
+    printf("[%s]: ", log_level[level]);
+
+    if (message && file && line)
+        printf("%s:%d %s", file, line, message);
+    else if (func)
+        printf("%s", func);
+    else
+        printf("Bug log toxcore");
+
+    printf("\n");
+}
+
 void ToxHandler::create_tox()
 {
-    struct Tox_Options *options = tox_options_new(NULL);
-    tox_options_set_start_port(options, PORT_RANGE_START);
-    tox_options_set_end_port(options, PORT_RANGE_END);
-    tox_options_set_experimental_thread_safety(options, true);
+    struct Tox_Options options;
+    tox_options_default(&options);
+    //tox_options_set_start_port(options, PORT_RANGE_START);
+    //tox_options_set_end_port(options, PORT_RANGE_END);
+    tox_options_set_log_callback(&options, log_callback);
+    //tox_options_set_udp_enabled(&options, !settings.disableudp);
+
+    tox_options_set_proxy_type(&options, TOX_PROXY_TYPE_NONE);
+    //tox_options_set_proxy_host(&options, (char *)settings.proxy_ip);
+    //tox_options_set_proxy_port(&options, settings.proxy_port);
 
     TOX_ERR_NEW err_new;
 
@@ -225,10 +240,10 @@ void ToxHandler::create_tox()
             fread(savedata, fsize, 1, f);
             fclose(f);
 
-            tox_options_set_savedata_type(options, TOX_SAVEDATA_TYPE_TOX_SAVE);
-            tox_options_set_savedata_data(options, (uint8_t *)savedata, fsize);
+            tox_options_set_savedata_type(&options, TOX_SAVEDATA_TYPE_TOX_SAVE);
+            tox_options_set_savedata_data(&options, (uint8_t *)savedata, fsize);
 
-            mTox = tox_new(options, &err_new);
+            mTox = tox_new(&options, &err_new);
             if (err_new != TOX_ERR_NEW_OK)
             {
                 fprintf(stderr, "tox_new failed with error code %d\n", err_new);
@@ -241,14 +256,13 @@ void ToxHandler::create_tox()
 
     if (!mTox)
     {
-        mTox = tox_new(options, &err_new);
+        mTox = tox_new(&options, &err_new);
         if (err_new != TOX_ERR_NEW_OK)
         {
             fprintf(stderr, "tox_new failed with error code %d\n", err_new);
             exit(1);
         }
     }
-    tox_options_free(options);
 
     uint8_t tox_id_bin[TOX_ADDRESS_SIZE];
     tox_self_get_address(mTox, tox_id_bin);
@@ -326,11 +340,25 @@ void ToxHandler::update_savedata_file()
 
 void ToxHandler::bootstrap()
 {
-    for (size_t i = 0; i < sizeof(bootstrap_nodes) / sizeof(struct DHT_node); i++)
+    static unsigned int j = 0;
+
+    if (j == 0)
     {
-        uint8_t *bin = hex2bin(bootstrap_nodes[i].key_hex);
-        tox_bootstrap(mTox, bootstrap_nodes[i].ip, bootstrap_nodes[i].port, bin, NULL);
-        free(bin);
+        j = rand();
+    }
+
+    int i = 0;
+    while (i < 4)
+    {
+        struct bootstrap_node *d = &bootstrap_nodes[j++ % COUNTOF(bootstrap_nodes)];
+        // do not add IPv6 bootstrap nodes if IPv6 is not enabled
+        if (d->ipv6)
+        {
+            continue;
+        }
+        tox_bootstrap(mTox, d->address, d->port_udp, d->key, 0);
+        tox_add_tcp_relay(mTox, d->address, d->port_tcp, d->key, 0);
+        i++;
     }
 }
 
@@ -338,15 +366,9 @@ void ToxHandler::setup_tox()
 {
     local_mFrame = mFrame;
     create_tox();
-    init_friends();
-    wxQueueEvent(mFrame, new wxCommandEvent(wxEVT_TOX_INIT));
 
-    ////// register callbacks
-
-    // self
+    // register callbacks
     tox_callback_self_connection_status(mTox, self_connection_status_cb);
-
-    // friend
     tox_callback_friend_request(mTox, friend_request_cb);
     tox_callback_friend_message(mTox, friend_message_cb);
     tox_callback_friend_name(mTox, friend_name_cb);
@@ -354,6 +376,8 @@ void ToxHandler::setup_tox()
     tox_callback_friend_connection_status(mTox, friend_connection_status_cb);
 
     bootstrap();
+    init_friends();
+    wxQueueEvent(mFrame, new wxCommandEvent(wxEVT_TOX_INIT));
 }
 
 void *ToxHandler::Entry()
