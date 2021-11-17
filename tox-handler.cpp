@@ -160,7 +160,7 @@ void friend_connection_status_cb(Tox *tox, uint32_t friend_num, TOX_CONNECTION c
     if (f)
     {
         f->connection = connection_status;
-        printf("* %s is %s", f->name, connection_enum2text(connection_status));
+        printf("* %s is %s\n", f->name, connection_enum2text(connection_status));
     }
 
     auto evt = new wxCommandEvent(wxEVT_TOX_FRIEND_STATUS);
